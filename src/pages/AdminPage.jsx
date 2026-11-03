@@ -16,7 +16,7 @@ export default function AdminPage() {
   const [isQuizActive, setIsQuizActive] = useState(false)
   const [timeToStart, setTimeToStart] = useState('00:00:00')
 
-  // State Data Registrasi Peserta & Search
+  // State Data Registrasi Peserta
   const [registeredList, setRegisteredList] = useState([])
   const [showAllData, setShowAllData] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -180,65 +180,36 @@ export default function AdminPage() {
   }
 
   // 10. Reset Semua Data Peserta
-        const handleResetAllParticipants = async () => {
+  const handleResetAllParticipants = async () => {
     if (!window.confirm("HATI-HATI!\nIni akan menghapus SEMUA data peserta (Wallet, Discord, Kode).\n\nYakin?")) return;
     
-    try {
-      // 1. Hapus semua data di database
-      const { error } = await supabase
-        .from('access_codes')
-        .delete()
-        .neq('used_by', '---TIDAK-MUNGKIN-ADA-USERNAME-INI---');
-      
-      if (error) throw error;
-
-      // 2. Jika berhasil, paksa layar bersih seketika
+    const { error } = await supabase.from('access_codes').delete().neq('used_by', '---TIDAK-MUNGKIN-ADA-USERNAME-INI---');
+    
+    if (error) alert('Gagal reset peserta: ' + error.message);
+    else {
       alert('SEMUA DATA PESERTA BERHASIL DIHAPUS!');
-      
-      // 3. KOSONGKAN TABEL SEKETIKA (Tabel akan muncul lagi otomatis saat ada data baru)
       setRegisteredList([]); 
-      setSearchQuery('');
-      setInputSearch('');
-      
-      // 4. Tutup modal jika sedang terbuka (opsional, biar Admin tahu datanya udah bersih)
-      setShowAllData(false); 
-
-    } catch (err) {
-      alert('Gagal reset peserta: ' + err.message);
+      setShowAllData(false);
+      fetchSettingsAndData(); 
     }
   }
 
-    // Fungsi Download Backup (CSV)
+  // 11. Backup CSV
   const handleDownloadBackup = () => {
-    if (registeredList.length === 0) {
-      alert("Belum ada data peserta untuk di-backup.");
-      return;
-    }
-
-    // Header kolom CSV
+    if (registeredList.length === 0) return alert("Belum ada data peserta untuk di-backup.");
     const headers = ["Discord", "Wallet Address", "Kode Akses", "Status"];
-    
-    // Isi baris CSV
-    const rows = registeredList.map(r => [
-      `"${r.used_by}"`, 
-      `"${r.wallet_address}"`, 
-      `"${r.code}"`, 
-      `"${r.used ? 'Sudah Main' : 'Belum Main'}"`
-    ]);
-
-    // Gabungkan header dan baris dengan koma (format CSV)
+    const rows = registeredList.map(r => [`"${r.used_by}"`, `"${r.wallet_address}"`, `"${r.code}"`, `"${r.used ? 'Sudah Main' : 'Belum Main'}"`]);
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    
-    // Buat file blob dan trigger download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `Backup_Peserta_Kuis_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `Backup_Peserta_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }
+
   // ==========================================
   // TAMPILAN LOGIN ADMIN
   // ==========================================
@@ -250,39 +221,14 @@ export default function AdminPage() {
           <div className="aurora-blob blob-2" style={{ opacity: 0.15 }}></div>
         </div>
         
-        <div style={{
-          position: 'relative', zIndex: 10, background: 'rgba(18, 26, 46, 0.7)',
-          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-          padding: '3rem 2.5rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.05)',
-          boxShadow: '0 25px 50px rgba(0,0,0,0.8)', width: '100%', maxWidth: '400px', textAlign: 'center'
-        }}>
-          <h2 style={{ color: '#ff7a00', marginBottom: '2rem', fontSize: '1.8rem', fontWeight: '800', letterSpacing: '1px' }}>
-            Akses Admin
-          </h2>
-          
+        <div style={{ position: 'relative', zIndex: 10, background: 'rgba(18, 26, 46, 0.7)', backdropFilter: 'blur(20px)', padding: '3rem 2.5rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.05)', boxShadow: '0 25px 50px rgba(0,0,0,0.8)', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+          <h2 style={{ color: '#ff7a00', marginBottom: '2rem', fontSize: '1.8rem', fontWeight: '800', letterSpacing: '1px' }}>Akses Admin</h2>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             <div style={{ textAlign: 'left' }}>
-              <label style={{ display: 'block', color: '#8a93a8', fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem', letterSpacing: '1px' }}>
-                Password Rahasia
-              </label>
-              <input 
-                type="password" placeholder="Masukkan password admin..." value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: '100%', padding: '1rem', background: 'rgba(10, 14, 26, 0.8)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px',
-                  color: 'white', fontSize: '1rem', outline: 'none', boxSizing: 'border-box'
-                }}
-              />
+              <label style={{ display: 'block', color: '#8a93a8', fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem' }}>Password Rahasia</label>
+              <input type="password" placeholder="Masukkan password admin..." value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '1rem', background: 'rgba(10, 14, 26, 0.8)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', color: 'white', outline: 'none', boxSizing: 'border-box' }} />
             </div>
-
-            <button type="submit" style={{
-              width: '100%', padding: '1rem', backgroundColor: '#ff7a00', color: '#0a0e1a',
-              border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1.1rem',
-              cursor: 'pointer', marginTop: '0.5rem', boxShadow: 'none', transition: 'background-color 0.2s'
-            }}>
-              Masuk
-            </button>
+            <button type="submit" style={{ width: '100%', padding: '1rem', backgroundColor: '#ff7a00', color: '#0a0e1a', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1.1rem', cursor: 'pointer' }}>Masuk</button>
             {error && <div style={{ color: '#ef4444', fontSize: '0.9rem', fontWeight: '600' }}>{error}</div>}
           </form>
         </div>
@@ -294,63 +240,46 @@ export default function AdminPage() {
   // TAMPILAN DASHBOARD (WEB3 PREMIUM)
   // ==========================================
   return (
-    <div className="admin-wrapper">
+    <div style={{ minHeight: '100vh', background: '#09090b', padding: '3rem 2rem', fontFamily: 'Montserrat, sans-serif', color: '#f4f4f5' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* HEADER DASHBOARD */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid #27272a', paddingBottom: '1.5rem' }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: '600', letterSpacing: '-0.5px', color: '#ffffff' }}>
-              Dashboard Admin
-            </h1>
-            <p style={{ color: '#a1a1aa', margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
-              Retium Quiz Control Center
-            </p>
+            <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: '600', letterSpacing: '-0.5px', color: '#ffffff' }}>Dashboard Admin</h1>
+            <p style={{ color: '#a1a1aa', margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>Retium Quiz Control Center</p>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <button onClick={handleReset} style={{ background: 'transparent', border: '1px solid #27272a', color: '#a1a1aa', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '0.85rem', transition: 'all 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.borderColor = '#ef4444'; e.currentTarget.style.color = '#ef4444'; }} onMouseOut={(e) => { e.currentTarget.style.borderColor = '#27272a'; e.currentTarget.style.color = '#a1a1aa'; }}>
-              Reset Data Live
-            </button>
+            <button onClick={handleReset} style={{ background: 'transparent', border: '1px solid #27272a', color: '#a1a1aa', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '0.85rem', transition: 'all 0.2s' }}>Reset Data Live</button>
             <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)', padding: '0.6rem 1.2rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', fontWeight: '500', color: '#22c55e' }}>
-              <span style={{ width: '6px', height: '6px', background: '#22c55e', borderRadius: '50%', display: 'inline-block' }}></span>
-              System Online
+              <span style={{ width: '6px', height: '6px', background: '#22c55e', borderRadius: '50%' }}></span> System Online
             </div>
           </div>
         </div>
 
-        {/* TOP GRID: KONTROL & DATA PESERTA */}
-        <div className="admin-grid">
+        {/* TOP GRID */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
           
-          {/* Kontrol Jadwal */}
-          <div className="admin-grid">
+          <div style={{ background: '#18181b', borderRadius: '16px', border: '1px solid #27272a', padding: '1.5rem' }}>
             <h3 style={{ color: '#ffffff', margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: '600' }}>Kontrol Jadwal</h3>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
               <input type="datetime-local" value={startTimeInput} onChange={(e) => setStartTimeInput(e.target.value)} style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', background: '#09090b', color: '#ffffff', border: '1px solid #27272a', outline: 'none', fontSize: '0.9rem' }} />
-              <button onClick={handleSetSchedule} style={{ background: '#ffffff', color: '#09090b', padding: '0.8rem 1.2rem', borderRadius: '8px', border: 'none', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = '#e4e4e7'} onMouseOut={(e) => e.currentTarget.style.background = '#ffffff'}>
-                Set
-              </button>
-              <button onClick={handleStopQuiz} style={{ background: 'transparent', color: '#a1a1aa', padding: '0.8rem 1.2rem', borderRadius: '8px', border: '1px solid #27272a', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#52525b'; }} onMouseOut={(e) => { e.currentTarget.style.color = '#a1a1aa'; e.currentTarget.style.borderColor = '#27272a'; }}>
-                Stop
-              </button>
+              <button onClick={handleSetSchedule} style={{ background: '#ffffff', color: '#09090b', padding: '0.8rem 1.2rem', borderRadius: '8px', border: 'none', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}>Set</button>
+              <button onClick={handleStopQuiz} style={{ background: 'transparent', color: '#a1a1aa', padding: '0.8rem 1.2rem', borderRadius: '8px', border: '1px solid #27272a', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}>Stop</button>
             </div>
             <div style={{ padding: '1rem', background: '#09090b', borderRadius: '8px', textAlign: 'center', border: '1px solid #27272a' }}>
               <p style={{ color: '#a1a1aa', fontSize: '0.75rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Status</p>
-              <h2 style={{ color: !isQuizActive ? '#a1a1aa' : '#ffffff', margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>
-                {!isQuizActive ? 'CLOSED' : timeToStart}
-              </h2>
+              <h2 style={{ color: !isQuizActive ? '#a1a1aa' : '#ffffff', margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>{!isQuizActive ? 'CLOSED' : timeToStart}</h2>
             </div>
           </div>
 
-          {/* Data Registrasi Peserta */}
           <div style={{ background: '#18181b', borderRadius: '16px', border: '1px solid #27272a', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <h3 style={{ color: '#ffffff', margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: '600' }}>Database Peserta</h3>
               <p style={{ color: '#a1a1aa', margin: 0, fontSize: '0.85rem' }}>Total <strong style={{ color: '#ffffff' }}>{registeredList.length}</strong> wallet terdaftar.</p>
             </div>
-            <button onClick={() => setShowAllData(true)} style={{ background: '#27272a', border: '1px solid #3f3f46', color: '#ffffff', padding: '0.8rem', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s', width: '100%', marginTop: '1rem' }} onMouseOver={(e) => e.currentTarget.style.background = '#3f3f46'} onMouseOut={(e) => e.currentTarget.style.background = '#27272a'}>
-              Lihat & Copy Data
-            </button>
+            <button onClick={() => setShowAllData(true)} style={{ background: '#27272a', border: '1px solid #3f3f46', color: '#ffffff', padding: '0.8rem', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s', width: '100%', marginTop: '1rem' }}>Lihat & Copy Data</button>
           </div>
 
         </div>
@@ -358,7 +287,6 @@ export default function AdminPage() {
         {/* BOTTOM GRID: LIVE MONITOR & STATISTIK */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
           
-          {/* LIVE MONITOR */}
           <div style={{ background: '#18181b', borderRadius: '16px', border: '1px solid #27272a', padding: '1.5rem' }}>
             <h3 style={{ color: '#ffffff', margin: '0 0 1.5rem 0', fontSize: '1rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ color: '#ff7a00' }}>●</span> Live Monitor
@@ -382,14 +310,13 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* STATISTIK */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ background: '#18181b', borderRadius: '16px', border: '1px solid #27272a', padding: '1.5rem' }}>
               <div style={{ display: 'flex', gap: '2rem' }}>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: '#a1a1aa', fontSize: '0.75rem', margin: '0 0 0.5rem 0', textTransform: 'uppercase', fontWeight: '600' }}>Top Score</p>
                   {finishedData.length > 0 ? (
-                    <><div style={{ color: '#ffffff', fontWeight: '600', fontSize: '1.1rem' }}>{finishedData[0].username}</div><div style={{ color: '#ff7a00', fontWeight: '700', fontSize: '1.5rem' }}>{finishedData[0].skor_total} <span style={{fontSize:'0.8rem', color: '#a1a1aa', fontWeight: 'normal'}}>PTS</span></div></>
+                    <><div style={{ color: '#ffffff', fontWeight: '600', fontSize: '1.1rem' }}>{finishedData[0].username}</div><div style={{ color: '#ff7a00', fontWeight: '700', fontSize: '1.5rem' }}>{finishedData[0].skor_total} <span style={{fontSize:'0.8rem', color: '#a1a1aa'}}>PTS</span></div></>
                   ) : <span style={{ color: '#52525b', fontSize: '0.9rem' }}>-</span>}
                 </div>
                 <div style={{ width: '1px', background: '#27272a' }}></div>
@@ -422,26 +349,25 @@ export default function AdminPage() {
           </div>
         </div>
 
-              {/* MODAL DATA PESERTA (FULL FITUR + BACKUP) */}
+        {/* MODAL DATA PESERTA (BAGIAN 2 AKAN DISAMBUNG DI SINI) */}
+                {/* MODAL DATA PESERTA (FULL FITUR) */}
         {showAllData && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
             <div style={{ background: '#0a0e1a', width: '100%', maxWidth: '1000px', maxHeight: '85vh', borderRadius: '24px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,122,0,0.3)', boxShadow: '0 25px 50px rgba(0,0,0,0.9)' }}>
               
               {/* Header Modal & Search */}
               <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
                   <div>
                     <h2 style={{ color: 'white', margin: 0, fontSize: '1.5rem', fontWeight: '800' }}>Data Lengkap Peserta</h2>
                     <p style={{ color: '#8a93a8', margin: '0.2rem 0 0 0', fontSize: '0.9rem' }}>Total {registeredList.length} peserta</p>
                   </div>
                   
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    {/* TOMBOL BACKUP BARU */}
-                    <button onClick={handleDownloadBackup} style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid #22c55e', color: '#22c55e', padding: '0 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '0.9rem' }}>
-                      Backup CSV
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button onClick={handleDownloadBackup} style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid #22c55e', color: '#22c55e', padding: '0 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '0.9rem', height: '40px' }}>
+                      ⬇️ Backup
                     </button>
-
-                    <button onClick={handleResetAllParticipants} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', padding: '0 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '0.9rem' }}>
+                    <button onClick={handleResetAllParticipants} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', padding: '0 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '0.9rem', height: '40px' }}>
                       Reset Peserta
                     </button>
                     <button onClick={() => setShowAllData(false)} style={{ background: 'rgba(255, 255, 255, 0.1)', border: '1px solid #ffffff', color: '#ffffff', width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}>
@@ -505,3 +431,8 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+
+      </div>
+    </div>
+  )
+}
