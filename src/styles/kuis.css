@@ -1027,3 +1027,66 @@ body {
   animation: shakeRed 0.5s ease-in-out;
   box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
 }
+/* =========================================
+   RESPONSIVE ADMIN DASHBOARD (MOBILE)
+   ========================================= */
+@media (max-width: 768px) {
+  /* Container Utama */
+  .app-container {
+    padding: 1rem !important;
+  }
+
+  /* Header Dashboard */
+  .kuis-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .kuis-header > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Grid Kotak menjadi 1 Kolom di HP */
+  div[style*="gridTemplateColumns: repeat(auto-fit, minmax(350px, 1fr))"],
+  div[style*="gridTemplateColumns: repeat(auto-fit, minmax(400px, 1fr))"] {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Modal Data Peserta */
+  div[style*="maxWidth: '1000px'"] {
+    padding: 1rem !important;
+    max-height: 95vh !important;
+  }
+
+  /* Tabel di dalam Modal */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Tombol di Modal */
+  div[style*="justifyContent: 'space-between'"] {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start !important;
+  }
+
+  div[style*="display: 'flex', gap: '10px'"] {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Input Search & Tombol Cari */
+  div[style*="display: 'flex', gap: '10px', width: '100%'"] {
+    flex-direction: column;
+  }
+
+  button[style*="padding: '0 1.5rem'"] {
+    width: 100%;
+    padding: 0.8rem !important;
+  }
+}
