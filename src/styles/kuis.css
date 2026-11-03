@@ -1090,3 +1090,93 @@ body {
     padding: 0.8rem !important;
   }
 }
+/* =========================================
+   FIX TOTAL MOBILE ADMIN (PURE CSS OVERRIDE)
+   ========================================= */
+@media (max-width: 768px) {
+  /* Memaksa semua kotak agar tidak melebar dari layar HP */
+  div, main, section, table {
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 1. Container Utama Admin */
+  div[style*="minHeight: '100vh'"] {
+    padding: 1rem !important;
+    overflow-x: hidden !important;
+  }
+
+  /* 2. Header (Judul & Tombol Reset) */
+  div[style*="justifyContent: 'space-between'"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    width: 100% !important;
+  }
+  
+  div[style*="display: 'flex', alignItems: 'center', gap: '0.8rem'"] {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  /* 3. Grid Layout (Kotak-kotak Utama) */
+  div[style*="gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))'"], 
+  div[style*="gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))'"] {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* 4. Input Tanggal & Tombol Set/Stop (Jadikan atas-bawah) */
+  div[style*="display: 'flex', gap: '0.5rem', marginBottom: '1rem'"] {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  div[style*="display: 'flex', gap: '0.5rem', marginBottom: '1rem'"] input,
+  div[style*="display: 'flex', gap: '0.5rem', marginBottom: '1rem'"] button {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  /* 5. Live Monitor (Paksa isi tabel turun ke bawah) */
+  div[style*="display: 'flex', alignItems: 'center', padding: '1rem'"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  /* 6. Top Score & Fastest Time (Bikin jadi atas-bawah) */
+  div[style*="display: 'flex', gap: '2rem'"] {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+  div[style*="width: '1px', background: '#27272a'"] {
+    display: none !important; /* Sembunyikan garis vertikal */
+  }
+
+  /* 7. Modal Data Peserta (Full Screen di HP) */
+  div[style*="position: 'fixed'"] > div {
+    max-height: 95vh !important;
+    width: 100% !important;
+    padding: 1rem !important;
+    border-radius: 12px !important;
+  }
+
+  /* 8. Search Bar & Tombol Cari di Modal */
+  div[style*="display: 'flex', gap: '10px'"] {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  div[style*="display: 'flex', gap: '10px'"] button {
+    width: 100% !important;
+    padding: 0.8rem !important;
+  }
+
+  /* 9. Tabel Data Peserta (Beri Scroll Horizontal) */
+  div[style*="padding: '1rem 2rem 2rem 2rem'"] {
+    padding: 0.5rem 0 !important;
+    overflow-x: auto !important;
+  }
+  table {
+    min-width: 600px !important;
+  }
+}
