@@ -180,18 +180,24 @@ export default function AdminPage() {
   }
 
   // 10. Reset Semua Data Peserta
-    const handleResetAllParticipants = async () => {
+      const handleResetAllParticipants = async () => {
     if (!window.confirm("HATI-HATI!\nIni akan menghapus SEMUA data peserta (Wallet, Discord, Kode).\nSkor dan Leaderboard TIDAK akan terhapus.\n\nYakin?")) return;
     
-    // PERBAIKAN: Gunakan kolom 'code' atau 'used_by' sebagai patokan hapus
     const { error } = await supabase
       .from('access_codes')
       .delete()
       .neq('used_by', '---TIDAK-MUNGKIN-ADA-USERNAME-INI---');
     
-    if (error) alert('Gagal reset peserta: ' + error.message);
-    else {
+    if (error) {
+      alert('Gagal reset peserta: ' + error.message);
+    } else {
       alert('SEMUA DATA PESERTA BERHASIL DIHAPUS!');
+      
+      // --- TAMBAHKAN BARIS INI ---
+      setRegisteredList([]); // Mengosongkan tabel di layar seketika
+      setShowAllData(false); // Menutup pop-up tabel
+      // ---------------------------
+      
       fetchSettingsAndData(); 
     }
   }
