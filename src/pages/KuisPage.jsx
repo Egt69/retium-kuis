@@ -284,16 +284,13 @@ export default function KuisPage() {
             <div style={{ background: 'rgba(138, 147, 168, 0.1)', border: '1px solid rgba(138, 147, 168, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#8a93a8' }}>
               PASS: <strong style={{ color: 'white' }}>0</strong>
             </div>
-          </div>
-          {/* ---------------------------------- */}
+          </div> 
 
-        </div>
-      </div>
-          </div>
-        </div>
-      </>
-    )
-  }
+        </div> 
+      </div> 
+    </> 
+  )
+}
 
   if (isLoading || questions.length === 0) {
     return (
