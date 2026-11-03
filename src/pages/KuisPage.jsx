@@ -264,7 +264,7 @@ export default function KuisPage() {
               {countdown}
             </div>
                       <p style={{ color: 'var(--text-muted)', marginTop: '1rem', letterSpacing: '2px' }}>DETIK LAGI</p>
-          
+                       
           {/* TAMBAHKAN KETERANGAN SKOR DI SINI */}
           <div style={{ 
             marginTop: '2rem', 
