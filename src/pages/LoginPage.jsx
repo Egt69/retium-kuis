@@ -1,7 +1,7 @@
-import ParticleBackground from '../components/ParticleBackground'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import ParticleBackground from '../components/ParticleBackground'
 import '../styles/kuis.css'
 
 export default function LoginPage() {
@@ -119,9 +119,10 @@ export default function LoginPage() {
   }
 
   return (
-    <ParticleBackground />
-      <div className="bg-grid"></div>
-
+    <div className="login-page-wrapper">
+      {/* LATAR BELAKANG PARTIKEL */}
+      <ParticleBackground />
+      
       <div className="login-box-premium">
         <div className="login-header">
           <h1 className="login-title">
