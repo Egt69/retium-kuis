@@ -208,6 +208,37 @@ export default function AdminPage() {
     }
   }
 
+    // Fungsi Download Backup (CSV)
+  const handleDownloadBackup = () => {
+    if (registeredList.length === 0) {
+      alert("Belum ada data peserta untuk di-backup.");
+      return;
+    }
+
+    // Header kolom CSV
+    const headers = ["Discord", "Wallet Address", "Kode Akses", "Status"];
+    
+    // Isi baris CSV
+    const rows = registeredList.map(r => [
+      `"${r.used_by}"`, 
+      `"${r.wallet_address}"`, 
+      `"${r.code}"`, 
+      `"${r.used ? 'Sudah Main' : 'Belum Main'}"`
+    ]);
+
+    // Gabungkan header dan baris dengan koma (format CSV)
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    
+    // Buat file blob dan trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Backup_Peserta_Kuis_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
   // ==========================================
   // TAMPILAN LOGIN ADMIN
   // ==========================================
@@ -391,8 +422,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* MODAL DATA PESERTA (BAGIAN 2 AKAN DISAMBUNG DI SINI) */}
-		        {/* MODAL DATA PESERTA (FULL FITUR) */}
+              {/* MODAL DATA PESERTA (FULL FITUR + BACKUP) */}
         {showAllData && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
             <div style={{ background: '#0a0e1a', width: '100%', maxWidth: '1000px', maxHeight: '85vh', borderRadius: '24px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,122,0,0.3)', boxShadow: '0 25px 50px rgba(0,0,0,0.9)' }}>
@@ -406,8 +436,17 @@ export default function AdminPage() {
                   </div>
                   
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={handleResetAllParticipants} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', padding: '0 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '0.9rem' }}>Reset Peserta</button>
-                    <button onClick={() => setShowAllData(false)} style={{ background: 'rgba(255, 255, 255, 0.1)', border: '1px solid #ffffff', color: '#ffffff', width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}>✕</button>
+                    {/* TOMBOL BACKUP BARU */}
+                    <button onClick={handleDownloadBackup} style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid #22c55e', color: '#22c55e', padding: '0 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '0.9rem' }}>
+                      Backup CSV
+                    </button>
+
+                    <button onClick={handleResetAllParticipants} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', padding: '0 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '0.9rem' }}>
+                      Reset Peserta
+                    </button>
+                    <button onClick={() => setShowAllData(false)} style={{ background: 'rgba(255, 255, 255, 0.1)', border: '1px solid #ffffff', color: '#ffffff', width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                      ✕
+                    </button>
                   </div>
                 </div>
                 
@@ -466,8 +505,3 @@ export default function AdminPage() {
             </div>
           </div>
         )}
-
-      </div>
-    </div>
-  )
-}
