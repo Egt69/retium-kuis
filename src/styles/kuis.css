@@ -1180,3 +1180,24 @@ body {
     min-width: 600px !important;
   }
 }
+/* =========================================
+   FIX: TOP SCORE & FASTEST TIME (STACK VERTICAL)
+   ========================================= */
+@media (max-width: 768px) {
+  /* Memaksa container Top Score & Fastest Time jadi atas-bawah */
+  div[style*="gap: '2rem'"] {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    width: 100% !important;
+  }
+
+  /* Menyembunyikan garis pemisah vertikal agar tidak aneh */
+  div[style*="width: '1px'"] {
+    display: none !important;
+  }
+
+  /* Memastikan teks tidak terpotong */
+  div[style*="gap: '2rem'"] > div {
+    width: 100% !important;
+  }
+}
