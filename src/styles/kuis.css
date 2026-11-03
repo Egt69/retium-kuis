@@ -1300,3 +1300,7 @@ body {
   border-radius: 10px;
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
+/* Latar Belakang Partikel */
+.login-page-wrapper {
+  background: transparent !important;
+}
