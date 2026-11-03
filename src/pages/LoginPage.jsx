@@ -38,7 +38,7 @@ export default function LoginPage() {
     if (error) {
       setError('Gagal registrasi: ' + error.message)
     } else if (data.success) {
-      setCode(data.code) // Otomatis isi kode
+      setCode(data.code)
       alert(`Registrasi Sukses!\nKode Akses Kamu: ${data.code}\n\nHarap simpan/catat kode ini.`);
     } else {
       setError(data.message)
@@ -59,26 +59,21 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // 1. Cek apakah Wallet sudah pernah terdaftar
       const { data: existingUser } = await supabase
         .from('access_codes')
         .select('*')
         .eq('wallet_address', wallet)
         .maybeSingle()
 
-      // Jika wallet sudah terdaftar
       if (existingUser) {
-        // Validasi Username
         if (existingUser.used_by !== username) {
           setError('Username Discord tidak cocok dengan Wallet ini!')
           setLoading(false)
           return
         }
 
-        // Jika kode BELUM dipakai (sedang proses main)
+        // Jika kode BELUM dipakai
         if (existingUser.used === false) {
-          
-          // --- TAMBAHKAN PENGECEKAN JADWAL DI SINI ---
           const { data: settings } = await supabase.from('quiz_settings').select('*').eq('id', 1).single()
           
           if (!settings || !settings.is_active) {
@@ -95,7 +90,6 @@ export default function LoginPage() {
             setLoading(false)
             return
           }
-          // -------------------------------------------
 
           localStorage.setItem('kuis_username', username)
           localStorage.setItem('kuis_wallet', wallet)
@@ -106,7 +100,7 @@ export default function LoginPage() {
           return
         }
 
-        // Jika kode SUDAH dipakai (sudah selesai), arahkan ke Leaderboard (Halaman Hasil)
+        // Jika kode SUDAH dipakai (selesai)
         const { data: historyData } = await supabase
           .from('results')
           .select('*')
@@ -133,7 +127,7 @@ export default function LoginPage() {
         return
       }
 
-      // 2. Jika wallet BELUM terdaftar, wajib validasi Kode Akses & Jadwal
+      // Jika wallet BELUM terdaftar
       if (!code) {
         setError('Wallet belum terdaftar. Silakan isi Kode Akses atau klik "Daftar & Generate".')
         setLoading(false)
@@ -157,7 +151,6 @@ export default function LoginPage() {
         return
       }
 
-      // Validasi Kode Akses
       const { data, error: rpcError } = await supabase.rpc('validate_access_code', {
         p_code: code,
         p_username: username
@@ -190,7 +183,8 @@ export default function LoginPage() {
       </div>
       <div className="bg-grid"></div>
 
-      <div className="login-box" style={{ maxWidth: '480px' }}>
+      {/* KOTAK LOGIN PREMIUM */}
+      <div className="login-box-premium">
         <div className="login-header">
           <h1 className="login-title">
             <span className="title-retium">RETIUM</span>
@@ -199,11 +193,11 @@ export default function LoginPage() {
           <p className="login-subtitle">Daftarkan dirimu atau masuk menggunakan kode akses.</p>
         </div>
 
-        <form onSubmit={handleLogin} className="login-form">
-          <div className="input-group">
+        <form onSubmit={handleLogin} className="login-form-premium">
+          <div className="input-group-premium">
             <label>Username Discord</label>
-            <div className="input-wrapper">
-              <span className="input-icon">👤</span>
+            <div className="input-wrapper-premium">
+              <span className="input-icon-premium">👤</span>
               <input 
                 type="text" placeholder="Contoh: akai#1234" 
                 value={username} onChange={(e) => setUsername(e.target.value)}
@@ -212,10 +206,10 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="input-group">
+          <div className="input-group-premium">
             <label>Wallet Address (Wajib diawali 'rete')</label>
-            <div className="input-wrapper">
-              <span className="input-icon">🪙</span>
+            <div className="input-wrapper-premium">
+              <span className="input-icon-premium">🪙</span>
               <input 
                 type="text" placeholder="rete..." 
                 value={wallet} onChange={(e) => setWallet(e.target.value)}
@@ -224,10 +218,10 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="input-group">
+          <div className="input-group-premium">
             <label>Kode Akses Unik (Kosongkan jika sudah pernah daftar)</label>
-            <div className="input-wrapper">
-              <span className="input-icon">🔑</span>
+            <div className="input-wrapper-premium">
+              <span className="input-icon-premium">🔑</span>
               <input 
                 type="text" placeholder="Kode otomatis atau masukkan kode cadangan" 
                 value={code} onChange={(e) => setCode(e.target.value)}
@@ -245,13 +239,11 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button type="submit" disabled={loading}
-            style={{ width: '100%', padding: '1.2rem', backgroundColor: '#ff7a00', color: '#0a0e1a', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1.1rem', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '1rem', opacity: loading ? 0.6 : 1 }}
-          >
+          <button type="submit" className="btn-premium" disabled={loading}>
             {loading ? 'MEMPROSES...' : 'MULAI KUIS 🚀'}
           </button>
 
-          {error && <div className="error-msg" style={{ marginTop: '1rem' }}>{error}</div>}
+          {error && <div className="error-msg-premium">{error}</div>}
         </form>
       </div>
     </div>

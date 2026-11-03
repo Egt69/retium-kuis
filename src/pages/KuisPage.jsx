@@ -76,7 +76,7 @@ export default function KuisPage() {
     fetchQuestions()
   }, [navigate, username, code, isWaiting])
 
-  // 3. REKAM WAKTU MULAI: Tepat saat soal pertama muncul di layar
+  // 3. REKAM WAKTU MULAI
   useEffect(() => {
     if (!isLoading && !isWaiting && questions.length > 0 && currentIndex === 0 && startTime === null) {
       setStartTime(Date.now())
@@ -291,44 +291,47 @@ export default function KuisPage() {
       </div>
       <div className="bg-grid"></div>
 
-      <div style={{ 
-        display: 'flex', maxWidth: '1400px', margin: '0 auto', padding: '2rem', minHeight: '100vh',
-        gap: '2rem', position: 'relative', zIndex: 10
-      }}>
+      <div className="kuis-layout-wrapper">
         
         {/* KOLOM KIRI (SOAL KUIS) */}
-        <div style={{ flex: '1 1 70%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div className="kuis-main-column">
           
           <div className="kuis-header">
-            <div className="score-badge">
-              Skor: <span className={skor >= 0 ? 'text-benar' : 'text-salah'}>{skor}</span>
+            {/* Skor Badge */}
+            <div className="score-badge-premium">
+              <span className="score-label">SKOR</span>
+              <span className={`score-value ${skor >= 0 ? 'text-benar' : 'text-salah'}`}>{skor}</span>
             </div>
             
-            <div className="timer-container">
-              <div className={`timer-text ${isDanger ? 'danger' : ''}`}>
-                {timeLeft}s
-              </div>
+            {/* Timer Kapsul */}
+            <div className={`timer-pill-premium ${isDanger ? 'danger' : ''}`}>
+              <span className="timer-number">{timeLeft}</span>
+              <span className="timer-unit">s</span>
               <div className="timer-bar-bg">
                 <div 
-                  className={`timer-bar-fill ${isDanger ? 'danger' : ''}`} 
+                  className="timer-bar-fill" 
                   style={{ width: `${(timeLeft / 20) * 100}%` }}
                 ></div>
               </div>
             </div>
           </div>
 
-          <div className="question-card">
-            <div className="question-number">SOAL {currentIndex + 1} DARI {questions.length}</div>
-            <div className="question-text">{soal.pertanyaan}</div>
+          {/* Kartu Soal */}
+          <div className="question-card-premium">
+            <div className="question-header">
+              <span className="question-label">SOAL {currentIndex + 1} DARI {questions.length}</span>
+            </div>
+            <div className="question-text-premium">{soal.pertanyaan}</div>
           </div>
 
-          <div className="options-grid">
+          {/* Pilihan Ganda */}
+          <div className="options-grid-premium">
             {['A', 'B', 'C', 'D'].map((opt) => {
               const textOpsi = soal[`opsi_${opt.toLowerCase()}`]
               const isCorrectAnswer = opt === soal.jawaban_benar
               const isUserChoice = opt === selectedOption
 
-              let btnClass = 'option-btn'
+              let btnClass = 'option-btn-premium'
               if (selectedOption !== null || timeLeft === 0) {
                 if (isCorrectAnswer) btnClass += ' correct-blink'
                 else if (isUserChoice) btnClass += ' wrong-shake'
@@ -341,106 +344,53 @@ export default function KuisPage() {
                   onClick={() => handleOptionClick(opt)}
                   disabled={selectedOption !== null || timeLeft === 0}
                 >
-                  <span className="option-prefix">{opt}</span> {textOpsi}
+                  <span className="option-badge">{opt}</span> 
+                  <span className="option-text">{textOpsi}</span>
                 </button>
               )
             })}
           </div>
 
-          {isLastQuestion && selectedOption !== null && (
-            <div style={{ textAlign: 'center', marginTop: '2rem', animation: 'fadeIn 1s infinite alternate' }}>
-              <p style={{ color: 'var(--orange)', fontWeight: '800', fontSize: '1.2rem', letterSpacing: '2px', textShadow: '0 0 15px var(--orange)' }}>
-                MENGHITUNG NILAI & MEMUAT LEADERBOARD...
-              </p>
+                    {isLastQuestion && selectedOption !== null && (
+            <div className="loading-shimmer-container">
+              <div className="loading-shimmer-text">
+                MENGHITUNG NILAI & MEMUAT LEADERBOARD
+              </div>
+              <div className="loading-dots">
+                <span></span><span></span><span></span>
+              </div>
             </div>
           )}
         </div>
 
         {/* KOLOM KANAN (PAPAN PERINGKAT) */}
-        <div style={{ 
-          flex: '1 1 30%', 
-          background: 'linear-gradient(145deg, rgba(18, 26, 46, 0.8), rgba(10, 14, 26, 0.9))', 
-          backdropFilter: 'blur(20px)', 
-          borderRadius: '24px', 
-          padding: '1.5rem', 
-          border: '1px solid rgba(255, 122, 0, 0.3)',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
-          display: 'flex', 
-          flexDirection: 'column',
-          maxHeight: '85vh',
-          position: 'sticky',
-          top: '2rem',
-          animation: 'slideInRight 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
-        }}>
+        <div className="leaderboard-premium">
           
-          {/* Header Papan Peringkat */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.8rem', 
-            marginBottom: '1.5rem', 
-            borderBottom: '1px solid rgba(255,122,0,0.3)', 
-            paddingBottom: '1rem' 
-          }}>
-            <span style={{ fontSize: '1.5rem', filter: 'drop-shadow(0 0 10px #ff7a00)' }}>🏆</span>
-            <h3 style={{ color: 'white', margin: 0, fontWeight: '900', fontSize: '1.2rem', letterSpacing: '1px', textShadow: '0 0 10px rgba(255,255,255,0.3)' }}>
-              PAPAN PERINGKAT
-            </h3>
+          <div className="lb-header-premium">
+            <span className="lb-icon">🏆</span>
+            <h3 className="lb-title-premium">PAPAN PERINGKAT</h3>
           </div>
-
-          {/* List Peringkat */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', paddingRight: '0.5rem', flex: 1 }}>
+          <div className="lb-list-premium">
             {liveLeaderboard.length === 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.5 }}>
-                <div style={{ width: '30px', height: '30px', border: '3px solid var(--orange)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1rem' }}></div>
-                <p style={{ color: '#8a93a8', fontSize: '0.9rem', textAlign: 'center' }}>Menunggu skor masuk...</p>
+              <div className="lb-loading">
+                <div className="spinner"></div>
+                <p>Menunggu skor masuk...</p>
               </div>
             ) : (
               liveLeaderboard.map((player, index) => {
-                // Logika Medali
-                let medali = `#${index + 1}`
-                let borderLeft = '1px solid rgba(255,255,255,0.05)'
-                let bgColor = 'rgba(10, 14, 26, 0.6)'
-                
-                if (index === 0) { medali = '🥇'; bgColor = 'rgba(255, 215, 0, 0.1)'; borderLeft = '3px solid #ffd700' }
-                else if (index === 1) { medali = '🥈'; bgColor = 'rgba(192, 192, 192, 0.1)'; borderLeft = '3px solid #c0c0c0' }
-                else if (index === 2) { medali = '🥉'; bgColor = 'rgba(205, 127, 50, 0.1)'; borderLeft = '3px solid #cd7f32' }
-
-                // Sorot Pemain Saat Ini
                 const isCurrentUser = player.username === username
-                if (isCurrentUser) {
-                  bgColor = 'rgba(255, 122, 0, 0.15)'
-                  borderLeft = '3px solid #ff7a00'
-                }
-
                 return (
                   <div 
                     key={player.username} 
-                    style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      padding: '0.8rem 1rem', 
-                      background: bgColor, 
-                      borderRadius: '12px', 
-                      border: '1px solid rgba(255,255,255,0.03)',
-                      borderLeft: borderLeft,
-                      boxShadow: isCurrentUser ? '0 0 15px rgba(255,122,0,0.2)' : 'none',
-                      transition: 'all 0.5s ease',
-                      transform: isCurrentUser ? 'scale(1.02)' : 'scale(1)'
-                    }}
+                    className={`lb-item-premium ${index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : ''} ${isCurrentUser ? 'is-me' : ''}`}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                      <span style={{ fontSize: index < 3 ? '1.2rem' : '0.9rem', fontWeight: '900', color: '#8a93a8', width: '30px', textAlign: 'center' }}>
-                        {medali}
+                    <div className="lb-left">
+                      <span className="lb-rank">
+                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                       </span>
-                      <span style={{ color: isCurrentUser ? '#ff7a00' : 'white', fontWeight: '800', fontSize: '0.95rem' }}>
-                        {player.username}
-                      </span>
+                      <span className="lb-name">{player.username}</span>
                     </div>
-                    <div style={{ color: isCurrentUser ? '#ff7a00' : 'white', fontWeight: '900', fontSize: '1.1rem', textShadow: isCurrentUser ? '0 0 10px rgba(255,122,0,0.5)' : 'none' }}>
-                      {player.skor}
-                    </div>
+                    <div className="lb-score">{player.skor} <span>PTS</span></div>
                   </div>
                 )
               })
