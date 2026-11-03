@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import ParticleBackground from '../components/ParticleBackground'
 import { hitungSkor } from '../lib/kuisLogic'
 import '../styles/kuis.css'
 
@@ -250,23 +251,22 @@ export default function KuisPage() {
   }
 
   // TAMPILAN RUANG TUNGGU
-  if (isWaiting) {
+   if (isWaiting) {
     return (
-      <div className="login-page-wrapper">
-        <div className="aurora-bg">
-          <div className="aurora-blob blob-1"></div>
-          <div className="aurora-blob blob-2"></div>
-        </div>
-        <div className="login-box" style={{ maxWidth: '400px', textAlign: 'center' }}>
-          <h2 className="text-orange" style={{ marginBottom: '1rem' }}>Ruang Tunggu</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Kuis akan segera dimulai secara serentak. Bersiap!</p>
-          
-          <div style={{ fontSize: '5rem', fontWeight: '800', color: 'white', textShadow: '0 0 30px var(--orange)' }}>
-            {countdown}
+      <>
+        <ParticleBackground />
+        <div className="login-page-wrapper">
+          <div className="login-box" style={{ maxWidth: '400px', textAlign: 'center' }}>
+            <h2 className="text-orange" style={{ marginBottom: '1rem' }}>Ruang Tunggu</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Kuis akan segera dimulai secara serentak. Bersiap!</p>
+            
+            <div style={{ fontSize: '5rem', fontWeight: '800', color: 'white', textShadow: '0 0 30px var(--orange)' }}>
+              {countdown}
+            </div>
+            <p style={{ color: 'var(--text-muted)', marginTop: '1rem', letterSpacing: '2px' }}>DETIK LAGI</p>
           </div>
-          <p style={{ color: 'var(--text-muted)', marginTop: '1rem', letterSpacing: '2px' }}>DETIK LAGI</p>
         </div>
-      </div>
+      </>
     )
   }
 
@@ -284,12 +284,7 @@ export default function KuisPage() {
 
   return (
     <>
-      <div className="aurora-bg">
-        <div className="aurora-blob blob-1"></div>
-        <div className="aurora-blob blob-2"></div>
-        <div className="aurora-blob blob-3"></div>
-      </div>
-      <div className="bg-grid"></div>
+     <ParticleBackground />
 
       <div className="kuis-layout-wrapper">
         
