@@ -1,0 +1,42 @@
+:root {
+  /* Background */
+  --navy-dark:    #0a0e1a;   /* background utama */
+  --navy-mid:     #121a2e;   /* card / panel soal */
+  --navy-light:   #1c2740;   /* hover / border netral */
+
+  /* Aksen utama: ORANGE */
+  --orange:       #ff7a00;   /* tombol, border aktif, timer */
+  --orange-glow:  #ff9a33;   /* hover / glow */
+  --orange-soft:  #ff7a0033; /* background transparan */
+
+  /* Feedback jawaban */
+  --benar:        #22c55e;   /* hijau — jawaban benar */
+  --benar-soft:   #22c55e33;
+  --salah:        #ef4444;   /* merah — jawaban salah */
+  --salah-soft:   #ef444433;
+
+  /* Teks */
+  --text-primary: #f5f7ff;
+  --text-muted:   #8a93a8;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
+body {
+  background-color: var(--navy-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Utility */
+.text-orange { color: var(--orange); }
+.text-benar { color: var(--benar); }
+.text-salah { color: var(--salah); }
+.text-center { text-align: center; }
