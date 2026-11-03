@@ -263,7 +263,32 @@ export default function KuisPage() {
             <div style={{ fontSize: '5rem', fontWeight: '800', color: 'white', textShadow: '0 0 30px var(--orange)' }}>
               {countdown}
             </div>
-            <p style={{ color: 'var(--text-muted)', marginTop: '1rem', letterSpacing: '2px' }}>DETIK LAGI</p>
+                      <p style={{ color: 'var(--text-muted)', marginTop: '1rem', letterSpacing: '2px' }}>DETIK LAGI</p>
+          
+          {/* TAMBAHKAN KETERANGAN SKOR DI SINI */}
+          <div style={{ 
+            marginTop: '2rem', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: '1rem', 
+            flexWrap: 'wrap',
+            fontSize: '0.85rem',
+            fontFamily: 'monospace' // Font gaya kode/terminal
+          }}>
+            <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#22c55e' }}>
+              BENAR: <strong style={{ color: 'white' }}>+10</strong>
+            </div>
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#ef4444' }}>
+              SALAH: <strong style={{ color: 'white' }}>-5</strong>
+            </div>
+            <div style={{ background: 'rgba(138, 147, 168, 0.1)', border: '1px solid rgba(138, 147, 168, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#8a93a8' }}>
+              PASS: <strong style={{ color: 'white' }}>0</strong>
+            </div>
+          </div>
+          {/* ---------------------------------- */}
+
+        </div>
+      </div>
           </div>
         </div>
       </>
