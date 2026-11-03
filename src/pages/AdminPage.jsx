@@ -257,10 +257,7 @@ export default function AdminPage() {
   // TAMPILAN DASHBOARD (WEB3 PREMIUM)
   // ==========================================
   return (
-    <div style={{
-      minHeight: '100vh', background: '#09090b', padding: '3rem 2rem', 
-      fontFamily: 'Montserrat, sans-serif', color: '#f4f4f5'
-    }}>
+    <div className="admin-wrapper">
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* HEADER DASHBOARD */}
@@ -286,10 +283,10 @@ export default function AdminPage() {
         </div>
 
         {/* TOP GRID: KONTROL & DATA PESERTA */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <div className="admin-grid">
           
           {/* Kontrol Jadwal */}
-          <div style={{ background: '#18181b', borderRadius: '16px', border: '1px solid #27272a', padding: '1.5rem' }}>
+          <div className="admin-grid">
             <h3 style={{ color: '#ffffff', margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: '600' }}>Kontrol Jadwal</h3>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
               <input type="datetime-local" value={startTimeInput} onChange={(e) => setStartTimeInput(e.target.value)} style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', background: '#09090b', color: '#ffffff', border: '1px solid #27272a', outline: 'none', fontSize: '0.9rem' }} />
