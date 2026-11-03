@@ -1304,3 +1304,60 @@ body {
 .login-page-wrapper {
   background: transparent !important;
 }
+/* =========================================
+   STYLING TAB & FORM REGISTER BARU
+   ========================================= */
+
+/* Tab Container */
+.login-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Tombol Tab */
+.login-tab-btn {
+  flex: 1;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.login-tab-btn.active {
+  background: linear-gradient(135deg, #ff7a00, #ff5000);
+  color: #0a0e1a;
+  box-shadow: 0 4px 15px rgba(255, 122, 0, 0.3);
+}
+
+.login-tab-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+/* Peringatan Keamanan (Merah) */
+.security-warning {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.8rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: #fca5a5;
+  text-align: left;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.security-warning strong {
+  color: #ef4444;
+  font-weight: 800;
+}
