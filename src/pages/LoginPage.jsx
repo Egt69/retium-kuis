@@ -1,3 +1,4 @@
+import ParticleBackground from '../components/ParticleBackground'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
@@ -118,11 +119,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-page-wrapper">
-      <div className="aurora-bg">
-        <div className="aurora-blob blob-1"></div>
-        <div className="aurora-blob blob-2"></div>
-      </div>
+    <ParticleBackground />
       <div className="bg-grid"></div>
 
       <div className="login-box-premium">
