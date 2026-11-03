@@ -180,25 +180,31 @@ export default function AdminPage() {
   }
 
   // 10. Reset Semua Data Peserta
-      const handleResetAllParticipants = async () => {
-    if (!window.confirm("HATI-HATI!\nIni akan menghapus SEMUA data peserta (Wallet, Discord, Kode).\nSkor dan Leaderboard TIDAK akan terhapus.\n\nYakin?")) return;
+        const handleResetAllParticipants = async () => {
+    if (!window.confirm("HATI-HATI!\nIni akan menghapus SEMUA data peserta (Wallet, Discord, Kode).\n\nYakin?")) return;
     
-    const { error } = await supabase
-      .from('access_codes')
-      .delete()
-      .neq('used_by', '---TIDAK-MUNGKIN-ADA-USERNAME-INI---');
-    
-    if (error) {
-      alert('Gagal reset peserta: ' + error.message);
-    } else {
+    try {
+      // 1. Hapus semua data di database
+      const { error } = await supabase
+        .from('access_codes')
+        .delete()
+        .neq('used_by', '---TIDAK-MUNGKIN-ADA-USERNAME-INI---');
+      
+      if (error) throw error;
+
+      // 2. Jika berhasil, paksa layar bersih seketika
       alert('SEMUA DATA PESERTA BERHASIL DIHAPUS!');
       
-      // --- TAMBAHKAN BARIS INI ---
-      setRegisteredList([]); // Mengosongkan tabel di layar seketika
-      setShowAllData(false); // Menutup pop-up tabel
-      // ---------------------------
+      // 3. KOSONGKAN TABEL SEKETIKA (Tabel akan muncul lagi otomatis saat ada data baru)
+      setRegisteredList([]); 
+      setSearchQuery('');
+      setInputSearch('');
       
-      fetchSettingsAndData(); 
+      // 4. Tutup modal jika sedang terbuka (opsional, biar Admin tahu datanya udah bersih)
+      setShowAllData(false); 
+
+    } catch (err) {
+      alert('Gagal reset peserta: ' + err.message);
     }
   }
 
