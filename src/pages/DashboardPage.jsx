@@ -13,13 +13,11 @@ export default function DashboardPage() {
   const [isQuizActive, setIsQuizActive] = useState(false)
 
   useEffect(() => {
-    // Jika tidak ada username, tendang ke login
     if (!username) {
       navigate('/')
       return
     }
 
-    // Fungsi ambil jadwal dan hitung mundur
     const checkSchedule = async () => {
       const { data } = await supabase.from('quiz_settings').select('*').eq('id', 1).single()
       
@@ -59,7 +57,6 @@ export default function DashboardPage() {
       
       <div style={{ maxWidth: '1000px', width: '100%', zIndex: 10, padding: '1rem' }}>
         
-        {/* HEADER */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', background: 'rgba(18, 26, 46, 0.6)', padding: '1.5rem 2rem', borderRadius: '24px', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)' }}>
           <div>
             <h1 style={{ color: 'white', margin: 0, fontSize: '1.5rem' }}>Halo, {username}!</h1>
@@ -70,10 +67,8 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* KONTEN DASHBOARD */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           
-          {/* KARTU JADWAL */}
           <div style={{ background: 'rgba(18, 26, 46, 0.6)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
             <h3 style={{ color: '#a1a1aa', marginBottom: '1rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Status Kuis</h3>
             <h2 style={{ color: !isQuizActive ? '#ef4444' : (timeToStart === 'KUIS DIMULAI' ? '#22c55e' : '#ff7a00'), margin: '0 0 1.5rem 0', fontSize: '2.5rem', fontWeight: '800' }}>
@@ -88,7 +83,6 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* KARTU PROFIL & EDIT */}
           <div style={{ background: 'rgba(18, 26, 46, 0.6)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)' }}>
             <h3 style={{ color: 'white', marginBottom: '1rem', fontSize: '1.2rem' }}>Profil Anda</h3>
             
