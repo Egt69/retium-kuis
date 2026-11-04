@@ -56,16 +56,13 @@ export default function KuisPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // 2. Ambil soal dari Supabase
-    // 1. Ambil soal dari Supabase & Validasi Akses
+  // 2. Ambil soal dari Supabase & Validasi Akses
   useEffect(() => {
-    // Jika tidak ada username, tendang ke login
     if (!username) {
       navigate('/')
       return
     }
     
-    // JIKA TIDAK ADA CODE, TENDANG KE DASHBOARD (Agar harus lewat dashboard dulu)
     if (!code) {
       navigate('/dashboard')
       return
@@ -77,7 +74,7 @@ export default function KuisPage() {
       const { data, error } = await supabase.from('questions').select('*').order('nomor', { ascending: true })
       if (error) {
         alert('Gagal memuat soal: ' + error.message)
-        navigate('/dashboard') // Jika error, balik ke dashboard
+        navigate('/dashboard')
       } else {
         setQuestions(data)
         setIsLoading(false)
@@ -85,6 +82,7 @@ export default function KuisPage() {
     }
     fetchQuestions()
   }, [navigate, username, code, isWaiting])
+
   // 3. REKAM WAKTU MULAI
   useEffect(() => {
     if (!isLoading && !isWaiting && questions.length > 0 && currentIndex === 0 && startTime === null) {
@@ -96,7 +94,7 @@ export default function KuisPage() {
   useEffect(() => {
     if (isLoading || isWaiting) return
 
-           const fetchLiveLeaderboard = async () => {
+    const fetchLiveLeaderboard = async () => {
       const { data: liveData } = await supabase
         .from('live_scores')
         .select('username, skor')
@@ -109,27 +107,19 @@ export default function KuisPage() {
           .select('used_by, avatar_url')
           
         const mergedData = liveData.map(player => {
-          // Kita bersihkan nama dari spasi dan jadikan huruf kecil untuk perbandingan
           const cleanPlayerName = player.username.trim().toLowerCase()
-          
           const user = userData?.find(u => u.used_by.trim().toLowerCase() === cleanPlayerName)
-          
           return {
             ...player,
             avatar_url: user?.avatar_url || null
           }
         })
-        
-        // Cek di Console (F12) apakah avatar_url ada isinya
-        console.log('Data Leaderboard:', mergedData)
-        
         setLiveLeaderboard(mergedData)
       }
     }
 
     fetchLiveLeaderboard()
     const intervalId = setInterval(fetchLiveLeaderboard, 2000)
-
     return () => clearInterval(intervalId)
   }, [isLoading, isWaiting])
 
@@ -280,7 +270,7 @@ export default function KuisPage() {
   }
 
   // TAMPILAN RUANG TUNGGU
-   if (isWaiting) {
+  if (isWaiting) {
     return (
       <>
         <ParticleBackground />
@@ -292,34 +282,24 @@ export default function KuisPage() {
             <div style={{ fontSize: '5rem', fontWeight: '800', color: 'white', textShadow: '0 0 30px var(--orange)' }}>
               {countdown}
             </div>
-                      <p style={{ color: 'var(--text-muted)', marginTop: '1rem', letterSpacing: '2px' }}>DETIK LAGI</p>
+            <p style={{ color: 'var(--text-muted)', marginTop: '1rem', letterSpacing: '2px' }}>DETIK LAGI</p>
                        
-          {/* TAMBAHKAN KETERANGAN SKOR DI SINI */}
-          <div style={{ 
-            marginTop: '2rem', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '1rem', 
-            flexWrap: 'wrap',
-            fontSize: '0.85rem',
-            fontFamily: 'monospace' // Font gaya kode/terminal
-          }}>
-            <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#22c55e' }}>
-              BENAR: <strong style={{ color: 'white' }}>+10</strong>
-            </div>
-            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#ef4444' }}>
-              SALAH: <strong style={{ color: 'white' }}>-5</strong>
-            </div>
-            <div style={{ background: 'rgba(138, 147, 168, 0.1)', border: '1px solid rgba(138, 147, 168, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#8a93a8' }}>
-              PASS: <strong style={{ color: 'white' }}>0</strong>
-            </div>
+            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.85rem', fontFamily: 'monospace' }}>
+              <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#22c55e' }}>
+                BENAR: <strong style={{ color: 'white' }}>+10</strong>
+              </div>
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#ef4444' }}>
+                SALAH: <strong style={{ color: 'white' }}>-5</strong>
+              </div>
+              <div style={{ background: 'rgba(138, 147, 168, 0.1)', border: '1px solid rgba(138, 147, 168, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#8a93a8' }}>
+                PASS: <strong style={{ color: 'white' }}>0</strong>
+              </div>
+            </div> 
           </div> 
-
         </div> 
-      </div> 
-    </> 
-  )
-}
+      </> 
+    )
+  }
 
   if (isLoading || questions.length === 0) {
     return (
@@ -335,21 +315,18 @@ export default function KuisPage() {
 
   return (
     <>
-     <ParticleBackground />
-
+      <ParticleBackground />
       <div className="kuis-layout-wrapper">
         
         {/* KOLOM KIRI (SOAL KUIS) */}
         <div className="kuis-main-column">
           
           <div className="kuis-header">
-            {/* Skor Badge */}
             <div className="score-badge-premium">
               <span className="score-label">SKOR</span>
               <span className={`score-value ${skor >= 0 ? 'text-benar' : 'text-salah'}`}>{skor}</span>
             </div>
             
-            {/* Timer Kapsul */}
             <div className={`timer-pill-premium ${isDanger ? 'danger' : ''}`}>
               <span className="timer-number">{timeLeft}</span>
               <span className="timer-unit">s</span>
@@ -362,7 +339,6 @@ export default function KuisPage() {
             </div>
           </div>
 
-          {/* Kartu Soal */}
           <div className="question-card-premium">
             <div className="question-header">
               <span className="question-label">SOAL {currentIndex + 1} DARI {questions.length}</span>
@@ -370,7 +346,6 @@ export default function KuisPage() {
             <div className="question-text-premium">{soal.pertanyaan}</div>
           </div>
 
-          {/* Pilihan Ganda */}
           <div className="options-grid-premium">
             {['A', 'B', 'C', 'D'].map((opt) => {
               const textOpsi = soal[`opsi_${opt.toLowerCase()}`]
@@ -397,7 +372,7 @@ export default function KuisPage() {
             })}
           </div>
 
-                    {isLastQuestion && selectedOption !== null && (
+          {isLastQuestion && selectedOption !== null && (
             <div className="loading-shimmer-container">
               <div className="loading-shimmer-text">
                 MENGHITUNG NILAI & MEMUAT LEADERBOARD
@@ -413,7 +388,6 @@ export default function KuisPage() {
         <div className="leaderboard-premium">
           
           <div className="lb-header-premium">
-            <span className="lb-icon">🏆</span>
             <h3 className="lb-title-premium">PAPAN PERINGKAT</h3>
           </div>
           <div className="lb-list-premium">
@@ -432,8 +406,23 @@ export default function KuisPage() {
                   >
                     <div className="lb-left">
                       <span className="lb-rank">
-                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                        {index === 0 ? '1' : index === 1 ? '2' : index === 2 ? '3' : `#${index + 1}`}
                       </span>
+                      
+                      {/* FOTO PROFIL DITAMBAHKAN DI SINI */}
+                      <div style={{
+                        width: '32px', height: '32px', borderRadius: '50%',
+                        background: '#18181b', overflow: 'hidden',
+                        border: isCurrentUser ? '1px solid #ff7a00' : '1px solid rgba(255,255,255,0.1)',
+                        display: 'flex', justifyContent: 'center', alignItems: 'center'
+                      }}>
+                        <img 
+                          src={player.avatar_url || `https://ui-avatars.com/api/?name=${player.username}&background=random`} 
+                          alt="Avatar" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
+                      </div>
+
                       <span className="lb-name">{player.username}</span>
                     </div>
                     <div className="lb-score">{player.skor} <span>PTS</span></div>
