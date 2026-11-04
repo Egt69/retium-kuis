@@ -6,7 +6,7 @@ import AdminPage from './pages/AdminPage'
 import ConfirmPage from './pages/ConfirmPage'
 import DashboardPage from './pages/DashboardPage'
 import EditProfilePage from './pages/EditProfilePage'
-import HistoryPage from './pages/HistoryPage'
+import HistoryPage from './pages/HistoryPage' 
 
 export default function App() {
   return (
@@ -15,7 +15,7 @@ export default function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/edit-profil" element={<EditProfilePage />} />
-        <Route path="/riwayat" element={<HistoryPage />} />
+        <Route path="/riwayat" element={<HistoryPage />} /> 
         <Route path="/kuis" element={<KuisPage />} />
         <Route path="/hasil" element={<HasilPage />} />
         <Route path="/admin-rahasia" element={<AdminPage />} />
