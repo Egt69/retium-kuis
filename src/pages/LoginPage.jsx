@@ -9,17 +9,22 @@ export default function LoginPage() {
   
   // State Form
   const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [wallet, setWallet] = useState('')
   
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  
+  // State Pop-up Konfirmasi
+  const [recoveryPopup, setRecoveryPopup] = useState(null) 
+  
   const navigate = useNavigate()
 
   // Fungsi Filter Username (Hanya huruf, angka, dan garis bawah)
   const handleUsernameChange = (e) => {
-    const val = e.target.value.replace(/[^a-zA-Z0-9_]/g, '') // Hapus karakter aneh
+    const val = e.target.value.replace(/[^a-zA-Z0-9_]/g, '') 
     setUsername(val)
   }
 
@@ -33,7 +38,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     
-    if (!username || !password || !confirmPassword || !wallet) {
+    if (!username || !email || !password || !confirmPassword || !wallet) {
       return setError('Semua kolom harus diisi!')
     }
     if (username.length < 3) {
@@ -51,20 +56,16 @@ export default function LoginPage() {
     const { data, error } = await supabase.rpc('register_participant', { 
       p_username: username, 
       p_password: password,
-      p_wallet: wallet 
+      p_wallet: wallet,
+      p_email: email
     })
     
     if (error) {
       setError('Gagal registrasi: ' + error.message)
     } else if (data.success) {
-      // Tampilkan alert kode rahasia
-      alert(
-        `REGISTRASI BERHASIL!\n\n` +
-        `Simpan Kode Rahasia ini untuk Reset Password jika kamu lupa:\n` +
-        `RECOVERY CODE: ${data.recovery}\n\n` +
-        `JANGAN BERIKAN KODE INI KE SIAPAPUN!`
-      )
-      // Setelah daftar, arahkan ke halaman login
+      // Tampilkan Pop-up Kode Konfirmasi
+      setRecoveryPopup({ confirm_code: data.confirm_code })
+      
       setActiveTab('login')
       setPassword('')
       setConfirmPassword('')
@@ -83,7 +84,6 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Cek user berdasarkan username dan password
       const { data: user, error: dbError } = await supabase
         .from('access_codes')
         .select('*')
@@ -99,7 +99,6 @@ export default function LoginPage() {
         return
       }
 
-      // Cek jadwal kuis
       const { data: settings } = await supabase.from('quiz_settings').select('*').eq('id', 1).single()
       if (!settings || !settings.is_active) {
         setError('Pendaftaran/Login telah ditutup oleh Admin.')
@@ -115,7 +114,6 @@ export default function LoginPage() {
         return
       }
 
-      // Jika kode belum dipakai (belum main), masuk ke Kuis
       if (user.used === false) {
         localStorage.setItem('kuis_username', user.used_by)
         localStorage.setItem('kuis_wallet', user.wallet_address)
@@ -125,7 +123,6 @@ export default function LoginPage() {
         return
       }
 
-      // Jika kode sudah dipakai (selesai main), ke halaman Hasil
       const { data: historyData } = await supabase.from('results').select('*').eq('username', user.used_by).order('created_at', { ascending: false }).limit(1).maybeSingle()
 
       if (historyData) {
@@ -208,6 +205,10 @@ export default function LoginPage() {
               <input type="text" placeholder="Username Discord (Tanpa spasi)" value={username} onChange={handleUsernameChange} required disabled={loading} />
             </div>
             <div className="input-wrapper-premium">
+              <span className="input-icon-premium">✉️</span>
+              <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} />
+            </div>
+            <div className="input-wrapper-premium">
               <span className="input-icon-premium">🔒</span>
               <input type="password" placeholder="Buat Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} />
             </div>
@@ -220,7 +221,6 @@ export default function LoginPage() {
               <input type="text" placeholder="Wallet Address (rete...)" value={wallet} onChange={(e) => setWallet(e.target.value)} required disabled={loading} />
             </div>
 
-            {/* PERINGATAN KEAMANAN */}
             <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.8rem', borderRadius: '8px', fontSize: '0.75rem', color: '#ef4444', textAlign: 'left', lineHeight: '1.4' }}>
               <strong>⚠️ PERINGATAN KEAMANAN:</strong><br/>
               Hanya masukkan Alamat Wallet (Address). JANGAN pernah memberikan PIN, Sandi, Kode, atau Seed Phrase (Private Key) Anda ke website ini!
@@ -234,6 +234,55 @@ export default function LoginPage() {
         )}
 
       </div>
+
+      {/* POP-UP KODE KONFIRMASI (BISA COPY & DOWNLOAD) */}
+      {recoveryPopup && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
+          <div style={{ background: '#0a0e1a', padding: '2.5rem', borderRadius: '24px', border: '1px solid rgba(255,122,0,0.3)', boxShadow: '0 25px 50px rgba(0,0,0,0.9)', maxWidth: '450px', width: '100%', textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📧</div>
+            <h2 style={{ color: 'white', margin: '0 0 1rem 0', fontSize: '1.5rem' }}>Pendaftaran Sukses!</h2>
+            <p style={{ color: '#a1a1aa', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Simpan kode ini untuk konfirmasi akun.</p>
+
+            <div style={{ background: 'rgba(255, 122, 0, 0.1)', border: '1px dashed var(--orange)', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '1px' }}>Kode Konfirmasi</p>
+              <h1 style={{ color: 'white', margin: 0, fontSize: '1.4rem', letterSpacing: '2px', fontFamily: 'monospace' }}>{recoveryPopup.confirm_code}</h1>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
+              <button 
+                onClick={() => { navigator.clipboard.writeText(recoveryPopup.confirm_code); alert('Kode berhasil di-copy!'); }} 
+                style={{ flex: 1, padding: '0.8rem', background: 'rgba(34, 197, 94, 0.2)', border: '1px solid #22c55e', color: '#22c55e', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Copy
+              </button>
+              <button 
+                onClick={() => {
+                  const element = document.createElement("a");
+                  const file = new Blob([`KODE KONFIRMASI RETIUM QUIZ\n\nKode: ${recoveryPopup.confirm_code}\n\nJangan bagikan kode ini ke siapapun.`], {type: 'text/plain'});
+                  element.href = URL.createObjectURL(file);
+                  element.download = "Kode_Konfirmasi_Retium.txt";
+                  document.body.appendChild(element);
+                  element.click();
+                }} 
+                style={{ flex: 1, padding: '0.8rem', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6', color: '#3b82f6', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Download
+              </button>
+            </div>
+
+            <button 
+              onClick={() => { 
+                setRecoveryPopup(null); 
+                // Arahkan ke halaman konfirmasi nanti
+                // navigate('/konfirmasi', { state: { email: email } }); 
+              }} 
+              style={{ width: '100%', padding: '1rem', background: 'var(--orange)', border: 'none', color: '#0a0e1a', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Saya Sudah Mencatat
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
