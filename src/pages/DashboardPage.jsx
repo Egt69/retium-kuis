@@ -152,7 +152,12 @@ export default function DashboardPage() {
             <p style={{ color: 'white', fontFamily: 'monospace', fontSize: '0.9rem', margin: 0, wordBreak: 'break-all' }}>{wallet}</p>
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button style={{ flex: 1, padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Riwayat Bermain</button>
+            <button 
+              onClick={() => navigate('/riwayat')} 
+              style={{ flex: 1, padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Riwayat Bermain
+            </button>
             <button 
               onClick={() => navigate('/edit-profil')} 
               style={{ flex: 1, padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}
