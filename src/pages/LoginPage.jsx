@@ -61,7 +61,7 @@ export default function LoginPage() {
   }
 
   // Fungsi Login (TANPA CEK JADWAL)
-  const handleLogin = async (e) => {
+    const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
     if (!username || !password) return setError('Username dan Password harus diisi!')
@@ -84,6 +84,19 @@ export default function LoginPage() {
         return
       }
 
+      localStorage.setItem('kuis_username', user.used_by)
+      localStorage.setItem('kuis_wallet', user.wallet_address)
+      localStorage.setItem('kuis_code', user.code)
+
+      navigate('/dashboard')
+      
+    } catch (err) {
+      console.error(err)
+      setError('Terjadi kesalahan sistem.')
+    } finally {
+      setLoading(false)
+    }
+  }
       // SIMPAN DATA KE LOCAL STORAGE
       localStorage.setItem('kuis_username', user.used_by)
       localStorage.setItem('kuis_wallet', user.wallet_address)
