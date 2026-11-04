@@ -19,12 +19,10 @@ export default function KuisPage() {
   const [selectedOption, setSelectedOption] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // State untuk jadwal & waktu
   const [startTime, setStartTime] = useState(null)
   const [isWaiting, setIsWaiting] = useState(true)
   const [countdown, setCountdown] = useState(0)
 
-  // State untuk Papan Peringkat
   const [liveLeaderboard, setLiveLeaderboard] = useState([])
 
   const timerRef = useRef(null)
@@ -56,18 +54,16 @@ export default function KuisPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // 2. Ambil soal dari Supabase & Validasi Akses
+  // 2. Ambil Soal
   useEffect(() => {
     if (!username) {
       navigate('/')
       return
     }
-    
     if (!code) {
       navigate('/dashboard')
       return
     }
-
     if (isWaiting) return 
 
     async function fetchQuestions() {
@@ -83,47 +79,47 @@ export default function KuisPage() {
     fetchQuestions()
   }, [navigate, username, code, isWaiting])
 
-  // 3. REKAM WAKTU MULAI
+  // 3. Rekam Waktu Mulai
   useEffect(() => {
     if (!isLoading && !isWaiting && questions.length > 0 && currentIndex === 0 && startTime === null) {
       setStartTime(Date.now())
     }
   }, [isLoading, isWaiting, questions, currentIndex, startTime])
 
-  // 4. Fetch Leaderboard Live (setiap 2 detik)
+  // 4. Fetch Leaderboard Live
   useEffect(() => {
     if (isLoading || isWaiting) return
 
-     const fetchLiveLeaderboard = async () => {
-   const { data: liveData } = await supabase
-     .from('live_scores')
-     .select('username, skor')
-     .order('skor', { ascending: false })
-     .limit(10)
-   
-   if (liveData) {
-     const { data: userData } = await supabase
-       .from('access_codes')
-       .select('used_by, avatar_url')
-       
-     const mergedData = liveData.map(player => {
-       const cleanPlayerName = player.username.trim().toLowerCase()
-       const user = userData?.find(u => u.used_by.trim().toLowerCase() === cleanPlayerName)
-       return {
-         ...player,
-         avatar_url: user?.avatar_url || null
-       }
-     })
-     setLiveLeaderboard(mergedData)
-   }
- }
+    const fetchLiveLeaderboard = async () => {
+      const { data: liveData } = await supabase
+        .from('live_scores')
+        .select('username, skor')
+        .order('skor', { ascending: false })
+        .limit(10)
+      
+      if (liveData) {
+        const { data: userData } = await supabase
+          .from('access_codes')
+          .select('used_by, avatar_url')
+          
+        const mergedData = liveData.map(player => {
+          const cleanPlayerName = player.username.trim().toLowerCase()
+          const user = userData?.find(u => u.used_by.trim().toLowerCase() === cleanPlayerName)
+          return {
+            ...player,
+            avatar_url: user?.avatar_url || null
+          }
+        })
+        setLiveLeaderboard(mergedData)
+      }
+    }
 
     fetchLiveLeaderboard()
     const intervalId = setInterval(fetchLiveLeaderboard, 2000)
     return () => clearInterval(intervalId)
   }, [isLoading, isWaiting])
 
-  // 5. Timer berjalan
+  // 5. Timer Berjalan
   useEffect(() => {
     if (isLoading || questions.length === 0 || isWaiting) return
 
@@ -140,7 +136,7 @@ export default function KuisPage() {
     return () => clearInterval(timerRef.current)
   }, [currentIndex, isLoading, questions, isWaiting])
 
-  // 6. Waktu habis (Pass otomatis)
+  // 6. Waktu Habis
   useEffect(() => {
     if (timeLeft === 0 && !isLoading && questions.length > 0 && !isWaiting) {
       if (selectedOption === null) {
@@ -153,7 +149,7 @@ export default function KuisPage() {
     }
   }, [timeLeft, isLoading, questions, selectedOption, isWaiting])
 
-  // 7. Klik opsi jawaban
+  // 7. Klik Opsi
   const handleOptionClick = (opsi) => {
     if (selectedOption !== null || timeLeft === 0) return
     setSelectedOption(opsi)
@@ -195,7 +191,7 @@ export default function KuisPage() {
     })
   }
 
-  // 9. Lanjut ke soal berikutnya
+  // 9. Lanjut Soal
   const handleNext = async () => {
     setSelectedOption(null)
 
@@ -207,7 +203,7 @@ export default function KuisPage() {
     }
   }
 
-  // 10. Simpan Hasil Akhir
+  // 10. Simpan Hasil
   const simpanHasil = async (skorAkhir) => {
     setIsLoading(true)
     const jumlahBenar = answersLog.filter(a => a.status === 'benar').length
@@ -409,7 +405,6 @@ export default function KuisPage() {
                         {index === 0 ? '1' : index === 1 ? '2' : index === 2 ? '3' : `#${index + 1}`}
                       </span>
                       
-                      {/* FOTO PROFIL DITAMBAHKAN DI SINI */}
                       <div style={{
                         width: '32px', height: '32px', borderRadius: '50%',
                         background: '#18181b', overflow: 'hidden',
