@@ -11,18 +11,19 @@ export default function ConfirmPage() {
   const navigate = useNavigate()
   const location = useLocation()
   
-  // Ambil email dari state navigasi sebelumnya
-  const email = location.state?.email
+  // Ambil username dari state navigasi (dikirim dari LoginPage)
+  const username = location.state?.username
 
   const handleConfirm = async (e) => {
     e.preventDefault()
     if (!code) return setError('Masukkan kode konfirmasi!')
     setLoading(true)
 
+    // Cek apakah username dan kode konfirmasi cocok
     const { data, error: dbError } = await supabase
       .from('access_codes')
       .update({ is_verified: true })
-      .eq('email', email)
+      .eq('used_by', username)
       .eq('confirm_code', code.toUpperCase())
       .select()
 
@@ -32,12 +33,14 @@ export default function ConfirmPage() {
       setError('Kode konfirmasi salah!')
     } else {
       alert('Akun berhasil dikonfirmasi! Silakan atur profil Anda.')
-      navigate('/setting-profil') // Nanti kita buat halaman ini
+      // Nanti kita arahkan ke halaman setting profil
+      // navigate('/setting-profil') 
     }
     setLoading(false)
   }
 
-  if (!email) {
+  // Jika tidak ada username, tendang kembali ke login
+  if (!username) {
     navigate('/')
     return null
   }
@@ -49,7 +52,9 @@ export default function ConfirmPage() {
         <h1 className="login-title" style={{ marginBottom: '1rem' }}>
           <span className="title-retium">KONFIRMASI</span>
         </h1>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Masukkan Kode Konfirmasi Anda</p>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', textAlign: 'center' }}>
+          Masukkan Kode Konfirmasi (RTM-ID...) yang Anda dapatkan saat mendaftar.
+        </p>
 
         <form onSubmit={handleConfirm} className="login-form-premium">
           <div className="input-wrapper-premium">
