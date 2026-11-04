@@ -29,7 +29,7 @@ export default function LoginPage() {
     return address.startsWith('rete') && address.length >= 30
   }
 
-  // Fungsi Daftar (Tanpa Email)
+  // Fungsi Daftar
   const handleRegister = async (e) => {
     e.preventDefault()
     setError('')
@@ -50,7 +50,6 @@ export default function LoginPage() {
     if (error) {
       setError('Gagal registrasi: ' + error.message)
     } else if (data.success) {
-      // Tampilkan Pop-up Kode Konfirmasi
       setRecoveryPopup({ confirm_code: data.confirm_code })
       setActiveTab('login')
       setPassword('')
@@ -61,8 +60,7 @@ export default function LoginPage() {
     setLoading(false)
   }
 
-  // Fungsi Login
-    // Fungsi Login
+  // Fungsi Login (TANPA CEK JADWAL)
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
@@ -91,7 +89,7 @@ export default function LoginPage() {
       localStorage.setItem('kuis_wallet', user.wallet_address)
       localStorage.setItem('kuis_code', user.code)
 
-      // LANGSUNG ARAHKAN KE DASHBOARD (Bukan ke Kuis)
+      // LANGSUNG ARAHKAN KE DASHBOARD
       navigate('/dashboard')
       
     } catch (err) {
@@ -101,6 +99,34 @@ export default function LoginPage() {
       setLoading(false)
     }
   }
+
+  return (
+    <div className="login-page-wrapper">
+      <ParticleBackground />
+      
+      <div className="login-box-premium">
+        
+        <div className="login-header">
+          <h1 className="login-title">
+            <span className="title-retium">RETIUM</span>
+            <span className="title-kuis">QUIZ</span>
+          </h1>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
+          <button 
+            onClick={() => { setActiveTab('login'); setError(''); }} 
+            style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', border: 'none', fontWeight: '800', cursor: 'pointer', transition: 'all 0.3s', background: activeTab === 'login' ? 'var(--orange)' : 'rgba(255,255,255,0.05)', color: activeTab === 'login' ? '#0a0e1a' : 'var(--text-muted)' }}
+          >
+            Login
+          </button>
+          <button 
+            onClick={() => { setActiveTab('register'); setError(''); }} 
+            style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', border: 'none', fontWeight: '800', cursor: 'pointer', transition: 'all 0.3s', background: activeTab === 'register' ? 'var(--orange)' : 'rgba(255,255,255,0.05)', color: activeTab === 'register' ? '#0a0e1a' : 'var(--text-muted)' }}
+          >
+            Daftar Baru
+          </button>
+        </div>
 
         {/* FORM LOGIN */}
         {activeTab === 'login' && (
