@@ -22,7 +22,6 @@ export default function EditProfilePage() {
       return
     }
 
-    // Ambil data profil dari database
     const fetchProfile = async () => {
       const { data } = await supabase
         .from('access_codes')
@@ -39,25 +38,22 @@ export default function EditProfilePage() {
     fetchProfile()
   }, [navigate, currentCode])
 
-  // Fungsi Upload Foto
-  const handleUpload = async (e) => {
+  const handleUpload = (e) => {
     const selectedFile = e.target.files[0]
     if (!selectedFile) return
     setFile(selectedFile)
-    
-    // Preview foto sementara
     setAvatarUrl(URL.createObjectURL(selectedFile))
   }
 
-  // Fungsi Simpan Perubahan
-    const handleSave = async (e) => {
+  // FUNGSI INI WAJIB PAKAI 'async' DI DEPANNYA
+  const handleSave = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
     try {
       let newAvatarUrl = avatarUrl
-      const oldUsername = localStorage.getItem('kuis_username') // Ambil nama lama
+      const oldUsername = localStorage.getItem('kuis_username')
 
       if (file) {
         const fileExt = file.name.split('.').pop()
@@ -76,7 +72,6 @@ export default function EditProfilePage() {
         newAvatarUrl = publicUrlData.publicUrl
       }
 
-      // 1. Update tabel access_codes
       const { error: updateError } = await supabase
         .from('access_codes')
         .update({
@@ -88,58 +83,11 @@ export default function EditProfilePage() {
 
       if (updateError) throw updateError
 
-      // 2. JIKA USERNAME BERUBAH, UPDATE JUGA TABEL LIVE_SCORES & RESULTS
       if (oldUsername !== username) {
         await supabase.from('live_scores').update({ username: username }).eq('username', oldUsername)
         await supabase.from('results').update({ username: username }).eq('username', oldUsername)
       }
 
-      localStorage.setItem('kuis_username', username)
-      localStorage.setItem('kuis_wallet', wallet)
-
-      alert('Profil berhasil diperbarui!')
-      navigate('/dashboard')
-
-    } catch (err) {
-      console.error(err)
-      setError('Gagal menyimpan profil: ' + err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-      // 1. Jika ada file baru di-upload
-      if (file) {
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${currentCode}-${Date.now()}.${fileExt}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(fileName, file)
-
-        if (uploadError) throw uploadError
-
-        // Ambil URL publiknya
-        const { data: publicUrlData } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(fileName)
-        
-        newAvatarUrl = publicUrlData.publicUrl
-      }
-
-      // 2. Update database
-      const { error: updateError } = await supabase
-        .from('access_codes')
-        .update({
-          used_by: username,
-          wallet_address: wallet,
-          avatar_url: newAvatarUrl
-        })
-        .eq('code', currentCode)
-
-      if (updateError) throw updateError
-
-      // 3. Update localStorage (jika username berubah)
       localStorage.setItem('kuis_username', username)
       localStorage.setItem('kuis_wallet', wallet)
 
@@ -164,7 +112,6 @@ export default function EditProfilePage() {
 
         <form onSubmit={handleSave} className="login-form-premium">
           
-          {/* FOTO PROFIL */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
             <div style={{ 
               width: '100px', height: '100px', borderRadius: '50%', 
@@ -188,7 +135,6 @@ export default function EditProfilePage() {
             </label>
           </div>
 
-          {/* USERNAME */}
           <div className="input-group-premium">
             <label>Username Discord</label>
             <div className="input-wrapper-premium">
@@ -202,7 +148,6 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          {/* WALLET */}
           <div className="input-group-premium">
             <label>Wallet Address</label>
             <div className="input-wrapper-premium">
