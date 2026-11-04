@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'handleLogin
 import { supabase } from '../lib/supabaseClient'
 import ParticleBackground from '../components/ParticleBackground'
 import '../styles/kuis.css'
@@ -61,7 +61,8 @@ export default function LoginPage() {
   }
 
   // Fungsi Login (TANPA CEK JADWAL)
-    const handleLogin = async (e) => {
+     // Fungsi Login (Bersih dari Cek Jadwal)
+  const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
     if (!username || !password) return setError('Username dan Password harus diisi!')
@@ -69,6 +70,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      // Cari user berdasarkan username dan password
       const { data: user, error: dbError } = await supabase
         .from('access_codes')
         .select('*')
@@ -84,15 +86,17 @@ export default function LoginPage() {
         return
       }
 
+      // Simpan data ke localStorage untuk Dashboard
       localStorage.setItem('kuis_username', user.used_by)
       localStorage.setItem('kuis_wallet', user.wallet_address)
       localStorage.setItem('kuis_code', user.code)
 
+      // Lempar ke Dashboard
       navigate('/dashboard')
       
     } catch (err) {
       console.error(err)
-      setError('Terjadi kesalahan sistem.')
+      setError('Terjadi kesalahan sistem. Coba lagi.')
     } finally {
       setLoading(false)
     }
