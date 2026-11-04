@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import ParticleBackground from '../components/ParticleBackground'
@@ -13,11 +13,24 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [wallet, setWallet] = useState('')
   
+  // State Negara
+  const [countries, setCountries] = useState([])
+  const [selectedCountry, setSelectedCountry] = useState('')
+  
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [recoveryPopup, setRecoveryPopup] = useState(null)
   
   const navigate = useNavigate()
+
+  // Ambil daftar negara dari tabel rooms
+  useEffect(() => {
+    const fetchCountries = async () => {
+      const { data } = await supabase.from('rooms').select('*').eq('is_global', false)
+      if (data) setCountries(data)
+    }
+    fetchCountries()
+  }, [])
 
   const handleUsernameChange = (e) => {
     const val = e.target.value.replace(/[^a-zA-Z0-9_]/g, '') 
@@ -34,7 +47,9 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     
-    if (!username || !password || !confirmPassword || !wallet) return setError('Semua kolom harus diisi!')
+    if (!username || !password || !confirmPassword || !wallet || !selectedCountry) {
+      return setError('Semua kolom harus diisi, termasuk negara!')
+    }
     if (username.length < 3) return setError('Username Discord minimal 3 karakter.')
     if (password !== confirmPassword) return setError('Password dan Konfirmasi Password tidak cocok!')
     if (!isValidWallet(wallet)) return setError('Wallet tidak valid! Harus diawali "rete".')
@@ -44,7 +59,8 @@ export default function LoginPage() {
     const { data, error } = await supabase.rpc('register_participant', { 
       p_username: username, 
       p_password: password,
-      p_wallet: wallet 
+      p_wallet: wallet,
+      p_negara: selectedCountry
     })
     
     if (error) {
@@ -60,7 +76,7 @@ export default function LoginPage() {
     setLoading(false)
   }
 
-  // Fungsi Login (Bersih)
+  // Fungsi Login
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
@@ -87,6 +103,7 @@ export default function LoginPage() {
       localStorage.setItem('kuis_username', user.used_by)
       localStorage.setItem('kuis_wallet', user.wallet_address)
       localStorage.setItem('kuis_code', user.code)
+      localStorage.setItem('kuis_negara', user.negara) // <-- Simpan negara user
 
       navigate('/dashboard')
       
@@ -162,6 +179,30 @@ export default function LoginPage() {
             <div className="input-wrapper-premium">
               <span className="input-icon-premium">🪙</span>
               <input type="text" placeholder="Wallet Address (rete...)" value={wallet} onChange={(e) => setWallet(e.target.value)} required disabled={loading} />
+            </div>
+            
+            {/* DROPDOWN NEGARA */}
+            <div className="input-wrapper-premium">
+              <span className="input-icon-premium">🌍</span>
+              <select 
+                value={selectedCountry} 
+                onChange={(e) => setSelectedCountry(e.target.value)} 
+                required 
+                disabled={loading}
+                style={{ 
+                  width: '100%', padding: '1.1rem 1rem 1.1rem 3.2rem', 
+                  background: 'transparent', border: 'none', color: 'white', 
+                  outline: 'none', cursor: 'pointer', appearance: 'none',
+                  WebkitAppearance: 'none', MozAppearance: 'none'
+                }}
+              >
+                <option value="" disabled style={{ color: '#0a0e1a' }}>Pilih Negara Kamu</option>
+                {countries.map((c) => (
+                  <option key={c.kode_negara} value={c.kode_negara} style={{ color: '#0a0e1a' }}>
+                    {c.nama_negara}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.8rem', borderRadius: '8px', fontSize: '0.75rem', color: '#ef4444', textAlign: 'left', lineHeight: '1.4' }}>
