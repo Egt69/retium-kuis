@@ -25,6 +25,7 @@ export default function AdminPage() {
   // State Room
   const [rooms, setRooms] = useState([])
   const [selectedRoom, setSelectedRoom] = useState('GLB')
+  const [isEditingSchedule, setIsEditingSchedule] = useState(false)
 
   // 1. Fungsi Login Admin
   const handleLogin = async (e) => {
@@ -94,15 +95,19 @@ export default function AdminPage() {
       .eq('room_target', selectedRoom)
       .maybeSingle()
 
-    if (settings) {
+        if (settings) {
       setIsQuizActive(settings.is_active)
-      if (settings.start_time) {
-        // KONVERSI DARI UTC KE WAKTU LOKAL BROWSER ADMIN
-        const d = new Date(settings.start_time)
-        const localISOTime = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
-        setStartTimeInput(localISOTime)
+      
+      // JIKA ADMIN SEDANG MENGETIK, JANGAN TIMPA INPUT!
+      if (settings.start_time && !isEditingSchedule) {
+        // Ambil string langsung tanpa konversi timezone (karena sudah tipe text di DB)
+        const waktuString = settings.start_time.slice(0, 16);
+        setStartTimeInput(waktuString);
       }
     } else {
+      setIsQuizActive(false)
+      setStartTimeInput('')
+    }
       setIsQuizActive(false)
       setStartTimeInput('')
     }
