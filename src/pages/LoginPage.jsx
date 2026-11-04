@@ -60,8 +60,7 @@ export default function LoginPage() {
     setLoading(false)
   }
 
-  // Fungsi Login (TANPA CEK JADWAL)
-     // Fungsi Login (Bersih dari Cek Jadwal)
+  // Fungsi Login (Bersih)
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
@@ -70,7 +69,6 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Cari user berdasarkan username dan password
       const { data: user, error: dbError } = await supabase
         .from('access_codes')
         .select('*')
@@ -86,32 +84,15 @@ export default function LoginPage() {
         return
       }
 
-      // Simpan data ke localStorage untuk Dashboard
       localStorage.setItem('kuis_username', user.used_by)
       localStorage.setItem('kuis_wallet', user.wallet_address)
       localStorage.setItem('kuis_code', user.code)
 
-      // Lempar ke Dashboard
       navigate('/dashboard')
       
     } catch (err) {
       console.error(err)
       setError('Terjadi kesalahan sistem. Coba lagi.')
-    } finally {
-      setLoading(false)
-    }
-  }
-      // SIMPAN DATA KE LOCAL STORAGE
-      localStorage.setItem('kuis_username', user.used_by)
-      localStorage.setItem('kuis_wallet', user.wallet_address)
-      localStorage.setItem('kuis_code', user.code)
-
-      // LANGSUNG ARAHKAN KE DASHBOARD
-      navigate('/dashboard')
-      
-    } catch (err) {
-      console.error(err)
-      setError('Terjadi kesalahan sistem.')
     } finally {
       setLoading(false)
     }
@@ -240,9 +221,9 @@ export default function LoginPage() {
               style={{ width: '100%', padding: '1rem', background: 'var(--orange)', border: 'none', color: '#0a0e1a', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
             >
               Saya Sudah Mencatat, Lanjut
-                      </button>
+            </button>
+          </div>
         </div>
-      </div>
       )}
     </div>
   )
