@@ -96,8 +96,7 @@ export default function KuisPage() {
   useEffect(() => {
     if (isLoading || isWaiting) return
 
-       const fetchLiveLeaderboard = async () => {
-      // 1. Ambil data skor dari live_scores
+           const fetchLiveLeaderboard = async () => {
       const { data: liveData } = await supabase
         .from('live_scores')
         .select('username, skor')
@@ -105,19 +104,24 @@ export default function KuisPage() {
         .limit(10)
       
       if (liveData) {
-        // 2. Ambil data avatar dari access_codes
         const { data: userData } = await supabase
           .from('access_codes')
           .select('used_by, avatar_url')
           
-        // 3. Gabungkan data skor dengan avatar
         const mergedData = liveData.map(player => {
-          const user = userData?.find(u => u.used_by === player.username)
+          // Kita bersihkan nama dari spasi dan jadikan huruf kecil untuk perbandingan
+          const cleanPlayerName = player.username.trim().toLowerCase()
+          
+          const user = userData?.find(u => u.used_by.trim().toLowerCase() === cleanPlayerName)
+          
           return {
             ...player,
             avatar_url: user?.avatar_url || null
           }
         })
+        
+        // Cek di Console (F12) apakah avatar_url ada isinya
+        console.log('Data Leaderboard:', mergedData)
         
         setLiveLeaderboard(mergedData)
       }
