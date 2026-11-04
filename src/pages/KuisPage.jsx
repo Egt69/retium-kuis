@@ -96,14 +96,31 @@ export default function KuisPage() {
   useEffect(() => {
     if (isLoading || isWaiting) return
 
-    const fetchLiveLeaderboard = async () => {
-      const { data } = await supabase
+       const fetchLiveLeaderboard = async () => {
+      // 1. Ambil data skor dari live_scores
+      const { data: liveData } = await supabase
         .from('live_scores')
         .select('username, skor')
         .order('skor', { ascending: false })
         .limit(10)
       
-      if (data) setLiveLeaderboard(data)
+      if (liveData) {
+        // 2. Ambil data avatar dari access_codes
+        const { data: userData } = await supabase
+          .from('access_codes')
+          .select('used_by, avatar_url')
+          
+        // 3. Gabungkan data skor dengan avatar
+        const mergedData = liveData.map(player => {
+          const user = userData?.find(u => u.used_by === player.username)
+          return {
+            ...player,
+            avatar_url: user?.avatar_url || null
+          }
+        })
+        
+        setLiveLeaderboard(mergedData)
+      }
     }
 
     fetchLiveLeaderboard()
