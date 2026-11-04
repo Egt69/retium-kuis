@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import ParticleBackground from '../components/ParticleBackground'
@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [wallet, setWallet] = useState('')
+  const [countries, setCountries] = useState([])
+  const [selectedCountry, setSelectedCountry] = useState('')
   
   // State Modal Lupa Password
   const [showForgot, setShowForgot] = useState(false)
@@ -24,6 +26,15 @@ export default function LoginPage() {
   const [recoveryPopup, setRecoveryPopup] = useState(null)
   
   const navigate = useNavigate()
+
+  // AMBIL DATA NEGARA (FIX DARI useState JADI useEffect)
+  useEffect(() => {
+    const fetchCountries = async () => {
+      const { data } = await supabase.from('rooms').select('*').eq('is_global', false)
+      if (data) setCountries(data)
+    }
+    fetchCountries()
+  }, [])
 
   const handleUsernameChange = (e) => {
     const val = e.target.value.replace(/[^a-zA-Z0-9_]/g, '') 
@@ -49,10 +60,12 @@ export default function LoginPage() {
 
     setLoading(true)
 
+    // FIX: TAMBAHKAN p_negara
     const { data, error } = await supabase.rpc('register_participant', { 
       p_username: username, 
       p_password: password,
-      p_wallet: wallet 
+      p_wallet: wallet,
+      p_negara: selectedCountry
     })
     
     if (error) {
@@ -114,7 +127,6 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // 1. Cari user berdasarkan username dan recovery code
       const { data: user } = await supabase
         .from('access_codes')
         .select('*')
@@ -128,7 +140,6 @@ export default function LoginPage() {
         return
       }
 
-      // 2. Update password baru
       const { error: updateError } = await supabase
         .from('access_codes')
         .update({ password: newPassword })
@@ -149,18 +160,6 @@ export default function LoginPage() {
       setLoading(false)
     }
   }
-
-  // Ambil daftar negara
-  const [countries, setCountries] = useState([])
-  const [selectedCountry, setSelectedCountry] = useState('')
-  
-  useState(() => {
-    const fetchCountries = async () => {
-      const { data } = await supabase.from('rooms').select('*').eq('is_global', false)
-      if (data) setCountries(data)
-    }
-    fetchCountries()
-  }, [])
 
   return (
     <div className="login-page-wrapper">
@@ -194,11 +193,9 @@ export default function LoginPage() {
         {activeTab === 'login' && (
           <form onSubmit={handleLogin} className="login-form-premium">
             <div className="input-wrapper-premium">
-              <span className="input-icon-premium"></span>
               <input type="text" placeholder="Username Discord" value={username} onChange={(e) => setUsername(e.target.value)} required disabled={loading} />
             </div>
             <div className="input-wrapper-premium">
-              <span className="input-icon-premium"></span>
               <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} />
             </div>
             <button type="submit" className="btn-premium" disabled={loading}>
@@ -223,25 +220,20 @@ export default function LoginPage() {
         {activeTab === 'register' && (
           <form onSubmit={handleRegister} className="login-form-premium">
             <div className="input-wrapper-premium">
-              <span className="input-icon-premium"></span>
               <input type="text" placeholder="Username Discord (Tanpa spasi)" value={username} onChange={handleUsernameChange} required disabled={loading} />
             </div>
             <div className="input-wrapper-premium">
-              <span className="input-icon-premium"></span>
               <input type="password" placeholder="Buat Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} />
             </div>
             <div className="input-wrapper-premium">
-              <span className="input-icon-premium"></span>
               <input type="password" placeholder="Konfirmasi Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={loading} />
             </div>
             <div className="input-wrapper-premium">
-              <span className="input-icon-premium"></span>
               <input type="text" placeholder="Wallet Address (rete...)" value={wallet} onChange={(e) => setWallet(e.target.value)} required disabled={loading} />
             </div>
             
             {/* DROPDOWN NEGARA */}
             <div className="input-wrapper-premium">
-              <span className="input-icon-premium"></span>
               <select 
                 value={selectedCountry} 
                 onChange={(e) => setSelectedCountry(e.target.value)} 
