@@ -5,24 +5,20 @@ import ParticleBackground from '../components/ParticleBackground'
 import '../styles/kuis.css'
 
 export default function LoginPage() {
-  const [activeTab, setActiveTab] = useState('login') // 'login' atau 'register'
+  const [activeTab, setActiveTab] = useState('login')
   
   // State Form
   const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [wallet, setWallet] = useState('')
   
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  
-  // State Pop-up Konfirmasi
-  const [recoveryPopup, setRecoveryPopup] = useState(null) 
+  const [recoveryPopup, setRecoveryPopup] = useState(null)
   
   const navigate = useNavigate()
 
-  // Fungsi Filter Username (Hanya huruf, angka, dan garis bawah)
   const handleUsernameChange = (e) => {
     const val = e.target.value.replace(/[^a-zA-Z0-9_]/g, '') 
     setUsername(val)
@@ -33,31 +29,22 @@ export default function LoginPage() {
     return address.startsWith('rete') && address.length >= 30
   }
 
-  // Fungsi Daftar
+  // Fungsi Daftar (Tanpa Email)
   const handleRegister = async (e) => {
     e.preventDefault()
     setError('')
     
-    if (!username || !email || !password || !confirmPassword || !wallet) {
-      return setError('Semua kolom harus diisi!')
-    }
-    if (username.length < 3) {
-      return setError('Username Discord minimal 3 karakter.')
-    }
-    if (password !== confirmPassword) {
-      return setError('Password dan Konfirmasi Password tidak cocok!')
-    }
-    if (!isValidWallet(wallet)) {
-      return setError('Wallet tidak valid! Harus diawali "rete".')
-    }
+    if (!username || !password || !confirmPassword || !wallet) return setError('Semua kolom harus diisi!')
+    if (username.length < 3) return setError('Username Discord minimal 3 karakter.')
+    if (password !== confirmPassword) return setError('Password dan Konfirmasi Password tidak cocok!')
+    if (!isValidWallet(wallet)) return setError('Wallet tidak valid! Harus diawali "rete".')
 
     setLoading(true)
 
     const { data, error } = await supabase.rpc('register_participant', { 
       p_username: username, 
       p_password: password,
-      p_wallet: wallet,
-      p_email: email
+      p_wallet: wallet 
     })
     
     if (error) {
@@ -65,7 +52,6 @@ export default function LoginPage() {
     } else if (data.success) {
       // Tampilkan Pop-up Kode Konfirmasi
       setRecoveryPopup({ confirm_code: data.confirm_code })
-      
       setActiveTab('login')
       setPassword('')
       setConfirmPassword('')
@@ -155,7 +141,6 @@ export default function LoginPage() {
       
       <div className="login-box-premium">
         
-        {/* Header */}
         <div className="login-header">
           <h1 className="login-title">
             <span className="title-retium">RETIUM</span>
@@ -163,7 +148,6 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        {/* TABS LOGIN / REGISTER */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
           <button 
             onClick={() => { setActiveTab('login'); setError(''); }} 
@@ -205,10 +189,6 @@ export default function LoginPage() {
               <input type="text" placeholder="Username Discord (Tanpa spasi)" value={username} onChange={handleUsernameChange} required disabled={loading} />
             </div>
             <div className="input-wrapper-premium">
-              <span className="input-icon-premium">✉️</span>
-              <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} />
-            </div>
-            <div className="input-wrapper-premium">
               <span className="input-icon-premium">🔒</span>
               <input type="password" placeholder="Buat Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} />
             </div>
@@ -235,13 +215,13 @@ export default function LoginPage() {
 
       </div>
 
-      {/* POP-UP KODE KONFIRMASI (BISA COPY & DOWNLOAD) */}
+      {/* POP-UP KODE KONFIRMASI */}
       {recoveryPopup && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
           <div style={{ background: '#0a0e1a', padding: '2.5rem', borderRadius: '24px', border: '1px solid rgba(255,122,0,0.3)', boxShadow: '0 25px 50px rgba(0,0,0,0.9)', maxWidth: '450px', width: '100%', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📧</div>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
             <h2 style={{ color: 'white', margin: '0 0 1rem 0', fontSize: '1.5rem' }}>Pendaftaran Sukses!</h2>
-            <p style={{ color: '#a1a1aa', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Simpan kode ini untuk konfirmasi akun.</p>
+            <p style={{ color: '#a1a1aa', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Simpan kode ini. Kamu akan membutuhkannya untuk verifikasi.</p>
 
             <div style={{ background: 'rgba(255, 122, 0, 0.1)', border: '1px dashed var(--orange)', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '1px' }}>Kode Konfirmasi</p>
@@ -273,12 +253,11 @@ export default function LoginPage() {
             <button 
               onClick={() => { 
                 setRecoveryPopup(null); 
-                // Arahkan ke halaman konfirmasi nanti
-                // navigate('/konfirmasi', { state: { email: email } }); 
+                navigate('/konfirmasi', { state: { username: username } }); 
               }} 
               style={{ width: '100%', padding: '1rem', background: 'var(--orange)', border: 'none', color: '#0a0e1a', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
             >
-              Saya Sudah Mencatat
+              Saya Sudah Mencatat, Lanjut
             </button>
           </div>
         </div>
