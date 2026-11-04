@@ -94,29 +94,29 @@ export default function KuisPage() {
   useEffect(() => {
     if (isLoading || isWaiting) return
 
-    const fetchLiveLeaderboard = async () => {
-      const { data: liveData } = await supabase
-        .from('live_scores')
-        .select('username, skor')
-        .order('skor', { ascending: false })
-        .limit(10)
-      
-      if (liveData) {
-        const { data: userData } = await supabase
-          .from('access_codes')
-          .select('used_by, avatar_url')
-          
-        const mergedData = liveData.map(player => {
-          const cleanPlayerName = player.username.trim().toLowerCase()
-          const user = userData?.find(u => u.used_by.trim().toLowerCase() === cleanPlayerName)
-          return {
-            ...player,
-            avatar_url: user?.avatar_url || null
-          }
-        })
-        setLiveLeaderboard(mergedData)
-      }
-    }
+     const fetchLiveLeaderboard = async () => {
+   const { data: liveData } = await supabase
+     .from('live_scores')
+     .select('username, skor')
+     .order('skor', { ascending: false })
+     .limit(10)
+   
+   if (liveData) {
+     const { data: userData } = await supabase
+       .from('access_codes')
+       .select('used_by, avatar_url')
+       
+     const mergedData = liveData.map(player => {
+       const cleanPlayerName = player.username.trim().toLowerCase()
+       const user = userData?.find(u => u.used_by.trim().toLowerCase() === cleanPlayerName)
+       return {
+         ...player,
+         avatar_url: user?.avatar_url || null
+       }
+     })
+     setLiveLeaderboard(mergedData)
+   }
+ }
 
     fetchLiveLeaderboard()
     const intervalId = setInterval(fetchLiveLeaderboard, 2000)
