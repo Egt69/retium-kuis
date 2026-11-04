@@ -95,19 +95,16 @@ export default function AdminPage() {
       .eq('room_target', selectedRoom)
       .maybeSingle()
 
-        if (settings) {
+    if (settings) {
       setIsQuizActive(settings.is_active)
       
       // JIKA ADMIN SEDANG MENGETIK, JANGAN TIMPA INPUT!
       if (settings.start_time && !isEditingSchedule) {
-        // Ambil string langsung tanpa konversi timezone (karena sudah tipe text di DB)
+        // Ambil string langsung tanpa konversi timezone
         const waktuString = settings.start_time.slice(0, 16);
         setStartTimeInput(waktuString);
       }
     } else {
-      setIsQuizActive(false)
-      setStartTimeInput('')
-    }
       setIsQuizActive(false)
       setStartTimeInput('')
     }
