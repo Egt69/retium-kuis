@@ -50,13 +50,63 @@ export default function EditProfilePage() {
   }
 
   // Fungsi Simpan Perubahan
-  const handleSave = async (e) => {
+    const handleSave = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
     try {
       let newAvatarUrl = avatarUrl
+      const oldUsername = localStorage.getItem('kuis_username') // Ambil nama lama
+
+      if (file) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${currentCode}-${Date.now()}.${fileExt}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, file)
+
+        if (uploadError) throw uploadError
+
+        const { data: publicUrlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName)
+        
+        newAvatarUrl = publicUrlData.publicUrl
+      }
+
+      // 1. Update tabel access_codes
+      const { error: updateError } = await supabase
+        .from('access_codes')
+        .update({
+          used_by: username,
+          wallet_address: wallet,
+          avatar_url: newAvatarUrl
+        })
+        .eq('code', currentCode)
+
+      if (updateError) throw updateError
+
+      // 2. JIKA USERNAME BERUBAH, UPDATE JUGA TABEL LIVE_SCORES & RESULTS
+      if (oldUsername !== username) {
+        await supabase.from('live_scores').update({ username: username }).eq('username', oldUsername)
+        await supabase.from('results').update({ username: username }).eq('username', oldUsername)
+      }
+
+      localStorage.setItem('kuis_username', username)
+      localStorage.setItem('kuis_wallet', wallet)
+
+      alert('Profil berhasil diperbarui!')
+      navigate('/dashboard')
+
+    } catch (err) {
+      console.error(err)
+      setError('Gagal menyimpan profil: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
       // 1. Jika ada file baru di-upload
       if (file) {
