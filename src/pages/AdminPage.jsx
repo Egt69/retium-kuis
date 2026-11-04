@@ -43,7 +43,8 @@ export default function AdminPage() {
     }
   }
 
-  const fetchSettingsAndData = async () => {
+  // FUNGSI INI HANYA BERJALAN SAAT PERTAMA LOAD ATAU GANTI ROOM
+  const loadRoomData = async () => {
     const { data: regData } = await supabase.from('access_codes').select('*')
     if (regData) setRegisteredList(regData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
 
@@ -54,7 +55,6 @@ export default function AdminPage() {
     if (settings) {
       setIsQuizActive(settings.is_active)
       if (settings.start_time) {
-        // AMBIL PERSIS 16 KARAKTER PERTAMA (YYYY-MM-DDTHH:mm)
         setStartTimeInput(settings.start_time.slice(0, 16)) 
       }
     } else {
@@ -63,12 +63,18 @@ export default function AdminPage() {
     }
   }
 
+  // AMBIL DATA LIVE SAJA (SETIAP 2 DETIK), TANPA MENYENTUH KOTAK INPUT
   useEffect(() => {
     if (!isAuthenticated) return
     fetchData()
-    fetchSettingsAndData()
-    const intervalId = setInterval(() => { fetchData(); fetchSettingsAndData() }, 2000)
+    const intervalId = setInterval(fetchData, 2000)
     return () => clearInterval(intervalId)
+  }, [isAuthenticated])
+
+  // LOAD JADWAL HANYA SAAT ROOM DIGANTI ATAU PERTAMA LOGIN
+  useEffect(() => {
+    if (!isAuthenticated) return
+    loadRoomData()
   }, [isAuthenticated, selectedRoom])
 
   useEffect(() => {
@@ -84,7 +90,7 @@ export default function AdminPage() {
           const m = Math.floor((distance % 3600000) / 60000).toString().padStart(2, '0')
           const s = Math.floor((distance % 60000) / 1000).toString().padStart(2, '0')
           setTimeToStart(`${h}:${m}:${s}`)
-        } else setTimeToStart('KUIM DIMULAI')
+        } else setTimeToStart('KUIS DIMULAI')
       } else setTimeToStart('DITUTUP')
     }, 1000)
     return () => clearInterval(interval)
@@ -93,7 +99,6 @@ export default function AdminPage() {
   const handleSetSchedule = async () => {
     if (!startTimeInput) return alert('Pilih waktu terlebih dahulu!')
     
-    // KIRIM PERSIS SEPERTI YANG DIKETIK
     const { error } = await supabase
       .from('quiz_settings')
       .update({ 
@@ -106,14 +111,14 @@ export default function AdminPage() {
       alert('Gagal set jadwal: ' + error.message)
     } else {
       alert(`Jadwal untuk room ${selectedRoom} berhasil diatur!`)
-      fetchSettingsAndData() // Refresh data
+      loadRoomData()
     }
   }
 
   const handleStopQuiz = async () => {
     if(!window.confirm(`Tutup pendaftaran untuk room ${selectedRoom}?`)) return;
     await supabase.from('quiz_settings').update({ is_active: false }).eq('room_target', selectedRoom)
-    fetchSettingsAndData()
+    loadRoomData()
   }
 
   const handleReset = async () => {
@@ -126,7 +131,7 @@ export default function AdminPage() {
   const handleResetCode = async (code, username) => {
     if (!window.confirm(`Izinkan "${username}" main lagi?`)) return;
     await supabase.from('access_codes').update({ used: false }).eq('code', code);
-    fetchSettingsAndData();
+    loadRoomData();
   }
 
   const handleResetAllParticipants = async () => {
