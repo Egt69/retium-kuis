@@ -223,9 +223,9 @@ export default function LoginPage() {
               style={{ width: '100%', padding: '1rem', background: 'var(--orange)', border: 'none', color: '#0a0e1a', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
             >
               Saya Sudah Mencatat, Lanjut
-            </button>
-          </div>
+                      </button>
         </div>
+      </div>
       )}
     </div>
   )
