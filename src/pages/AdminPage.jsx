@@ -22,7 +22,7 @@ export default function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [inputSearch, setInputSearch] = useState('')
 
-  // STATE BARU UNTUK ROOM
+  // State Room
   const [rooms, setRooms] = useState([])
   const [selectedRoom, setSelectedRoom] = useState('GLB')
 
@@ -69,7 +69,7 @@ export default function AdminPage() {
     }
   }
 
-  // 3. Ambil Status Jadwal, Data Registrasi, & Daftar Room
+  // 3. Ambil Status Jadwal, Data Registrasi, & Daftar Room (FIX TIMEZONE)
   const fetchSettingsAndData = async () => {
     // Ambil data peserta
     const { data: regData, error: regError } = await supabase
@@ -97,6 +97,7 @@ export default function AdminPage() {
     if (settings) {
       setIsQuizActive(settings.is_active)
       if (settings.start_time) {
+        // KONVERSI DARI UTC KE WAKTU LOKAL BROWSER ADMIN
         const d = new Date(settings.start_time)
         const localISOTime = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
         setStartTimeInput(localISOTime)
@@ -153,10 +154,13 @@ export default function AdminPage() {
     return () => clearInterval(interval)
   }, [isAuthenticated, selectedRoom])
 
-  // 6. Simpan Jadwal
+  // 6. Simpan Jadwal (FIX TIMEZONE)
   const handleSetSchedule = async () => {
     if (!startTimeInput) return alert('Pilih waktu terlebih dahulu!')
-    const isoTime = new Date(startTimeInput).toISOString()
+    
+    // KONVERSI WAKTU LOKAL ADMIN KE UTC UNTUK DATABASE
+    const localDate = new Date(startTimeInput)
+    const isoTime = localDate.toISOString()
     
     const { error } = await supabase
       .from('quiz_settings')
@@ -166,6 +170,7 @@ export default function AdminPage() {
     if (error) alert('Gagal set jadwal: ' + error.message)
     else {
       alert(`Jadwal untuk room ${selectedRoom} berhasil diatur!`)
+      fetchSettingsAndData()
     }
   }
 
@@ -284,7 +289,6 @@ export default function AdminPage() {
           <div style={{ background: '#18181b', borderRadius: '16px', border: '1px solid #27272a', padding: '1.5rem' }}>
             <h3 style={{ color: '#ffffff', margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: '600' }}>Kontrol Jadwal</h3>
             
-            {/* DROPDOWN ROOM BARU */}
             <div style={{ marginBottom: '1rem' }}>
               <select 
                 value={selectedRoom} 
@@ -385,12 +389,11 @@ export default function AdminPage() {
           </div>
         </div>
 
-                {/* MODAL DATA PESERTA (FULL FITUR) */}
+               {/* MODAL DATA PESERTA (FULL FITUR) */}
         {showAllData && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
             <div style={{ background: '#0a0e1a', width: '100%', maxWidth: '1000px', maxHeight: '85vh', borderRadius: '24px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,122,0,0.3)', boxShadow: '0 25px 50px rgba(0,0,0,0.9)' }}>
               
-              {/* Header Modal & Search */}
               <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
                   <div>
@@ -427,7 +430,6 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Tabel Data */}
               <div style={{ padding: '1rem 2rem 2rem 2rem', overflowY: 'auto', flex: 1 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', color: 'white', fontSize: '0.9rem' }}>
                   <thead style={{ position: 'sticky', top: 0, background: '#0a0e1a', zIndex: 1 }}>
