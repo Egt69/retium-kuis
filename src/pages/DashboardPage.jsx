@@ -8,7 +8,7 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const username = localStorage.getItem('kuis_username')
   const wallet = localStorage.getItem('kuis_wallet')
-  const userNegara = localStorage.getItem('kuis_negara') // Kode negara user (misal: INA)
+  const userNegara = localStorage.getItem('kuis_negara')
   
   const [globalRoom, setGlobalRoom] = useState({ active: false, time: '00:00:00' })
   const [regionalRoom, setRegionalRoom] = useState({ active: false, time: '00:00:00' })
@@ -20,16 +20,13 @@ export default function DashboardPage() {
       return
     }
 
-    // Ambil nama negara user untuk judul kartu
     const fetchNegara = async () => {
       const { data } = await supabase.from('rooms').select('nama_negara').eq('kode_negara', userNegara).single()
       if (data) setNamaNegara(data.nama_negara)
     }
     if (userNegara) fetchNegara()
 
-    // Fungsi cek jadwal kedua room
     const checkSchedule = async () => {
-      // 1. Cek Room Global
       const { data: globalData } = await supabase
         .from('quiz_settings')
         .select('*')
@@ -53,7 +50,6 @@ export default function DashboardPage() {
         }
       }
 
-      // 2. Cek Room Regional
       if (userNegara) {
         const { data: regData } = await supabase
           .from('quiz_settings')
@@ -112,7 +108,7 @@ export default function DashboardPage() {
           
           {/* KARTU ROOM GLOBAL */}
           <div style={{ background: 'rgba(18, 26, 46, 0.6)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-            <h3 style={{ color: '#a1a1aa', marginBottom: '0.5rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Room Global 🌍</h3>
+            <h3 style={{ color: '#a1a1aa', marginBottom: '0.5rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Room Global</h3>
             <h2 style={{ color: !globalRoom.active ? '#ef4444' : (globalRoom.time === 'MULAI' ? '#22c55e' : '#ff7a00'), margin: '0 0 1.5rem 0', fontSize: '2.5rem', fontWeight: '800' }}>
               {globalRoom.time}
             </h2>
@@ -130,7 +126,7 @@ export default function DashboardPage() {
 
           {/* KARTU ROOM REGIONAL */}
           <div style={{ background: 'rgba(18, 26, 46, 0.6)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-            <h3 style={{ color: '#a1a1aa', marginBottom: '0.5rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Room {namaNegara} 🏳️</h3>
+            <h3 style={{ color: '#a1a1aa', marginBottom: '0.5rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Room {namaNegara}</h3>
             <h2 style={{ color: !regionalRoom.active ? '#ef4444' : (regionalRoom.time === 'MULAI' ? '#22c55e' : '#ff7a00'), margin: '0 0 1.5rem 0', fontSize: '2.5rem', fontWeight: '800' }}>
               {regionalRoom.time}
             </h2>
@@ -157,7 +153,12 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <button style={{ flex: 1, padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Riwayat Bermain</button>
-            <button style={{ flex: 1, padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Edit Profil</button>
+            <button 
+              onClick={() => navigate('/edit-profil')} 
+              style={{ flex: 1, padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Edit Profil
+            </button>
           </div>
         </div>
 
