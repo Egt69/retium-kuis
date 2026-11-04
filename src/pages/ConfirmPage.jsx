@@ -14,10 +14,48 @@ export default function ConfirmPage() {
   // Ambil username dari state navigasi (dikirim dari LoginPage)
   const username = location.state?.username
 
-  const handleConfirm = async (e) => {
+    const handleConfirm = async (e) => {
     e.preventDefault()
     if (!code) return setError('Masukkan kode konfirmasi!')
     setLoading(true)
+
+    try {
+      // 1. Cari data user berdasarkan kode konfirmasi
+      const { data, error: dbError } = await supabase
+        .from('access_codes')
+        .select('*')
+        .eq('confirm_code', code.toUpperCase())
+        .maybeSingle()
+
+      if (dbError) throw dbError
+
+      if (!data) {
+        setError('Kode konfirmasi salah!')
+        setLoading(false)
+        return
+      }
+
+      // 2. Tandai bahwa akun sudah terverifikasi (opsional)
+      await supabase.from('access_codes').update({ is_verified: true }).eq('id', data.id)
+
+      // 3. Simpan data user ke localStorage (Agar tidak perlu login ulang)
+      localStorage.setItem('kuis_username', data.used_by)
+      localStorage.setItem('kuis_wallet', data.wallet_address)
+      localStorage.setItem('kuis_code', data.code)
+      localStorage.setItem('kuis_negara', data.negara)
+
+      alert('Akun berhasil dikonfirmasi! Selamat datang di Dashboard.')
+      
+      // 4. Langsung lempar ke Dashboard
+      navigate('/dashboard')
+
+    } catch (err) {
+      console.error(err)
+      setError('Terjadi kesalahan sistem.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
     // Cek apakah username dan kode konfirmasi cocok
     const { data, error: dbError } = await supabase
