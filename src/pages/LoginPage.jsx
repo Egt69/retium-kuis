@@ -62,6 +62,7 @@ export default function LoginPage() {
   }
 
   // Fungsi Login
+    // Fungsi Login
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
@@ -85,48 +86,14 @@ export default function LoginPage() {
         return
       }
 
-      const { data: settings } = await supabase.from('quiz_settings').select('*').eq('id', 1).single()
-      if (!settings || !settings.is_active) {
-        setError('Pendaftaran/Login telah ditutup oleh Admin.')
-        setLoading(false)
-        return
-      }
+      // SIMPAN DATA KE LOCAL STORAGE
+      localStorage.setItem('kuis_username', user.used_by)
+      localStorage.setItem('kuis_wallet', user.wallet_address)
+      localStorage.setItem('kuis_code', user.code)
+
+      // LANGSUNG ARAHKAN KE DASHBOARD (Bukan ke Kuis)
+      navigate('/dashboard')
       
-      const now = new Date().getTime()
-      const start = new Date(settings.start_time).getTime()
-      if (now >= start) {
-        setError('PENDAFTARAN DITUTUP. Kuis sudah dimulai!')
-        setLoading(false)
-        return
-      }
-
-      if (user.used === false) {
-        localStorage.setItem('kuis_username', user.used_by)
-        localStorage.setItem('kuis_wallet', user.wallet_address)
-        localStorage.setItem('kuis_code', user.code)
-        localStorage.setItem('kuis_start_time', settings.start_time)
-        navigate('/kuis')
-        return
-      }
-
-      const { data: historyData } = await supabase.from('results').select('*').eq('username', user.used_by).order('created_at', { ascending: false }).limit(1).maybeSingle()
-
-      if (historyData) {
-        localStorage.setItem('skor_akhir', historyData.skor_total)
-        localStorage.setItem('hasil_benar', historyData.jumlah_benar)
-        localStorage.setItem('hasil_salah', historyData.jumlah_salah)
-        localStorage.setItem('hasil_pass', historyData.jumlah_pass)
-        localStorage.setItem('waktu_selesai', historyData.waktu_selesai || '-')
-      } else {
-        localStorage.setItem('skor_akhir', '0')
-        localStorage.setItem('hasil_benar', '0')
-        localStorage.setItem('hasil_salah', '0')
-        localStorage.setItem('hasil_pass', '0')
-        localStorage.setItem('waktu_selesai', 'Belum bermain')
-      }
-      
-      navigate('/hasil')
-
     } catch (err) {
       console.error(err)
       setError('Terjadi kesalahan sistem.')
@@ -134,34 +101,6 @@ export default function LoginPage() {
       setLoading(false)
     }
   }
-
-  return (
-    <div className="login-page-wrapper">
-      <ParticleBackground />
-      
-      <div className="login-box-premium">
-        
-        <div className="login-header">
-          <h1 className="login-title">
-            <span className="title-retium">RETIUM</span>
-            <span className="title-kuis">QUIZ</span>
-          </h1>
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
-          <button 
-            onClick={() => { setActiveTab('login'); setError(''); }} 
-            style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', border: 'none', fontWeight: '800', cursor: 'pointer', transition: 'all 0.3s', background: activeTab === 'login' ? 'var(--orange)' : 'rgba(255,255,255,0.05)', color: activeTab === 'login' ? '#0a0e1a' : 'var(--text-muted)' }}
-          >
-            Login
-          </button>
-          <button 
-            onClick={() => { setActiveTab('register'); setError(''); }} 
-            style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', border: 'none', fontWeight: '800', cursor: 'pointer', transition: 'all 0.3s', background: activeTab === 'register' ? 'var(--orange)' : 'rgba(255,255,255,0.05)', color: activeTab === 'register' ? '#0a0e1a' : 'var(--text-muted)' }}
-          >
-            Daftar Baru
-          </button>
-        </div>
 
         {/* FORM LOGIN */}
         {activeTab === 'login' && (
