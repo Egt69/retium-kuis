@@ -57,18 +57,27 @@ export default function KuisPage() {
   }, [])
 
   // 2. Ambil soal dari Supabase
+    // 1. Ambil soal dari Supabase & Validasi Akses
   useEffect(() => {
-    if (!username || !code) {
+    // Jika tidak ada username, tendang ke login
+    if (!username) {
       navigate('/')
       return
     }
+    
+    // JIKA TIDAK ADA CODE, TENDANG KE DASHBOARD (Agar harus lewat dashboard dulu)
+    if (!code) {
+      navigate('/dashboard')
+      return
+    }
+
     if (isWaiting) return 
 
     async function fetchQuestions() {
       const { data, error } = await supabase.from('questions').select('*').order('nomor', { ascending: true })
       if (error) {
         alert('Gagal memuat soal: ' + error.message)
-        navigate('/')
+        navigate('/dashboard') // Jika error, balik ke dashboard
       } else {
         setQuestions(data)
         setIsLoading(false)
@@ -76,7 +85,6 @@ export default function KuisPage() {
     }
     fetchQuestions()
   }, [navigate, username, code, isWaiting])
-
   // 3. REKAM WAKTU MULAI
   useEffect(() => {
     if (!isLoading && !isWaiting && questions.length > 0 && currentIndex === 0 && startTime === null) {
