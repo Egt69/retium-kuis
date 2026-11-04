@@ -22,6 +22,10 @@ export default function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [inputSearch, setInputSearch] = useState('')
 
+  // STATE BARU UNTUK ROOM
+  const [rooms, setRooms] = useState([])
+  const [selectedRoom, setSelectedRoom] = useState('GLB')
+
   // 1. Fungsi Login Admin
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -65,8 +69,9 @@ export default function AdminPage() {
     }
   }
 
-  // 3. Ambil Status Jadwal & Data Registrasi
+  // 3. Ambil Status Jadwal, Data Registrasi, & Daftar Room
   const fetchSettingsAndData = async () => {
+    // Ambil data peserta
     const { data: regData, error: regError } = await supabase
       .from('access_codes')
       .select('*') 
@@ -78,19 +83,27 @@ export default function AdminPage() {
       setRegisteredList(sortedData)
     }
 
-    if (!startTimeInput) {
-      const { data: settings } = await supabase.from('quiz_settings').select('*').eq('id', 1).single()
-      if (settings) {
-        setIsQuizActive(settings.is_active)
-        if (settings.start_time) {
-          const d = new Date(settings.start_time)
-          const localISOTime = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
-          setStartTimeInput(localISOTime)
-        }
+    // Ambil daftar room
+    const { data: roomData } = await supabase.from('rooms').select('*')
+    if (roomData) setRooms(roomData)
+
+    // Ambil jadwal sesuai room yang dipilih
+    const { data: settings } = await supabase
+      .from('quiz_settings')
+      .select('*')
+      .eq('room_target', selectedRoom)
+      .maybeSingle()
+
+    if (settings) {
+      setIsQuizActive(settings.is_active)
+      if (settings.start_time) {
+        const d = new Date(settings.start_time)
+        const localISOTime = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+        setStartTimeInput(localISOTime)
       }
     } else {
-      const { data: settings } = await supabase.from('quiz_settings').select('is_active').eq('id', 1).single()
-      if (settings) setIsQuizActive(settings.is_active)
+      setIsQuizActive(false)
+      setStartTimeInput('')
     }
   }
 
@@ -106,14 +119,18 @@ export default function AdminPage() {
     }, 2000)
     
     return () => clearInterval(intervalId)
-  }, [isAuthenticated, startTimeInput])
+  }, [isAuthenticated, selectedRoom])
 
   // 5. Hitung Mundur
   useEffect(() => {
     if (!isAuthenticated) return 
 
     const interval = setInterval(async () => {
-      const { data: settings } = await supabase.from('quiz_settings').select('start_time, is_active').eq('id', 1).single()
+      const { data: settings } = await supabase
+        .from('quiz_settings')
+        .select('start_time, is_active')
+        .eq('room_target', selectedRoom)
+        .maybeSingle()
       
       if (settings && settings.is_active) {
         const now = new Date().getTime()
@@ -134,28 +151,31 @@ export default function AdminPage() {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [isAuthenticated])
+  }, [isAuthenticated, selectedRoom])
 
   // 6. Simpan Jadwal
   const handleSetSchedule = async () => {
     if (!startTimeInput) return alert('Pilih waktu terlebih dahulu!')
     const isoTime = new Date(startTimeInput).toISOString()
     
-    const { error } = await supabase.from('quiz_settings').update({ 
-      start_time: isoTime, is_active: true 
-    }).eq('id', 1)
+    const { error } = await supabase
+      .from('quiz_settings')
+      .update({ start_time: isoTime, is_active: true })
+      .eq('room_target', selectedRoom)
 
     if (error) alert('Gagal set jadwal: ' + error.message)
     else {
-      alert('Jadwal kuis berhasil diatur!')
-      setStartTimeInput('') 
+      alert(`Jadwal untuk room ${selectedRoom} berhasil diatur!`)
     }
   }
 
   // 7. Tutup Pendaftaran
   const handleStopQuiz = async () => {
-    if(!window.confirm("Tutup pendaftaran? Peserta baru tidak akan bisa mendaftar atau masuk.")) return;
-    await supabase.from('quiz_settings').update({ is_active: false }).eq('id', 1)
+    if(!window.confirm(`Tutup pendaftaran untuk room ${selectedRoom}?`)) return;
+    await supabase
+      .from('quiz_settings')
+      .update({ is_active: false })
+      .eq('room_target', selectedRoom)
     alert('Pendaftaran ditutup!')
     fetchSettingsAndData()
   }
@@ -181,7 +201,7 @@ export default function AdminPage() {
 
   // 10. Reset Semua Data Peserta
   const handleResetAllParticipants = async () => {
-    if (!window.confirm("HATI-HATI!\nIni akan menghapus SEMUA data peserta (Wallet, Discord, Kode).\n\nYakin?")) return;
+    if (!window.confirm("HATI-HATI!\nIni akan menghapus SEMUA data peserta.\n\nYakin?")) return;
     
     const { error } = await supabase.from('access_codes').delete().neq('used_by', '---TIDAK-MUNGKIN-ADA-USERNAME-INI---');
     
@@ -197,8 +217,8 @@ export default function AdminPage() {
   // 11. Backup CSV
   const handleDownloadBackup = () => {
     if (registeredList.length === 0) return alert("Belum ada data peserta untuk di-backup.");
-    const headers = ["Discord", "Wallet Address", "Kode Akses", "Status"];
-    const rows = registeredList.map(r => [`"${r.used_by}"`, `"${r.wallet_address}"`, `"${r.code}"`, `"${r.used ? 'Sudah Main' : 'Belum Main'}"`]);
+    const headers = ["Discord", "Negara", "Wallet Address", "Kode Akses", "Status"];
+    const rows = registeredList.map(r => [`"${r.used_by}"`, `"${r.negara || '-'}"`, `"${r.wallet_address}"`, `"${r.code}"`, `"${r.used ? 'Sudah Main' : 'Belum Main'}"`]);
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -263,13 +283,29 @@ export default function AdminPage() {
           
           <div style={{ background: '#18181b', borderRadius: '16px', border: '1px solid #27272a', padding: '1.5rem' }}>
             <h3 style={{ color: '#ffffff', margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: '600' }}>Kontrol Jadwal</h3>
+            
+            {/* DROPDOWN ROOM BARU */}
+            <div style={{ marginBottom: '1rem' }}>
+              <select 
+                value={selectedRoom} 
+                onChange={(e) => setSelectedRoom(e.target.value)}
+                style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: '#09090b', color: '#ffffff', border: '1px solid #27272a', outline: 'none', fontSize: '0.9rem' }}
+              >
+                {rooms.map((r) => (
+                  <option key={r.kode_negara} value={r.kode_negara}>
+                    {r.is_global ? '🌍 Global' : `🏳️ ${r.nama_negara}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
               <input type="datetime-local" value={startTimeInput} onChange={(e) => setStartTimeInput(e.target.value)} style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', background: '#09090b', color: '#ffffff', border: '1px solid #27272a', outline: 'none', fontSize: '0.9rem' }} />
               <button onClick={handleSetSchedule} style={{ background: '#ffffff', color: '#09090b', padding: '0.8rem 1.2rem', borderRadius: '8px', border: 'none', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}>Set</button>
               <button onClick={handleStopQuiz} style={{ background: 'transparent', color: '#a1a1aa', padding: '0.8rem 1.2rem', borderRadius: '8px', border: '1px solid #27272a', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}>Stop</button>
             </div>
             <div style={{ padding: '1rem', background: '#09090b', borderRadius: '8px', textAlign: 'center', border: '1px solid #27272a' }}>
-              <p style={{ color: '#a1a1aa', fontSize: '0.75rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Status</p>
+              <p style={{ color: '#a1a1aa', fontSize: '0.75rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Status {selectedRoom}</p>
               <h2 style={{ color: !isQuizActive ? '#a1a1aa' : '#ffffff', margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>{!isQuizActive ? 'CLOSED' : timeToStart}</h2>
             </div>
           </div>
@@ -349,7 +385,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* MODAL DATA PESERTA (BAGIAN 2 AKAN DISAMBUNG DI SINI) */}
                 {/* MODAL DATA PESERTA (FULL FITUR) */}
         {showAllData && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
