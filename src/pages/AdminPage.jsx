@@ -25,7 +25,6 @@ export default function AdminPage() {
   // State Room
   const [rooms, setRooms] = useState([])
   const [selectedRoom, setSelectedRoom] = useState('GLB')
-  const [isEditingSchedule, setIsEditingSchedule] = useState(false)
 
   // 1. Fungsi Login Admin
   const handleLogin = async (e) => {
@@ -70,16 +69,11 @@ export default function AdminPage() {
     }
   }
 
-  // 3. Ambil Status Jadwal, Data Registrasi, & Daftar Room (FIX TIMEZONE)
+  // 3. Ambil Status Jadwal, Data Registrasi, & Daftar Room
   const fetchSettingsAndData = async () => {
     // Ambil data peserta
-    const { data: regData, error: regError } = await supabase
-      .from('access_codes')
-      .select('*') 
-    
-    if (regError) {
-      console.error("Gagal ambil data registrasi:", regError)
-    } else if (regData) {
+    const { data: regData } = await supabase.from('access_codes').select('*') 
+    if (regData) {
       const sortedData = regData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       setRegisteredList(sortedData)
     }
@@ -97,12 +91,12 @@ export default function AdminPage() {
 
     if (settings) {
       setIsQuizActive(settings.is_active)
-      
-      // JIKA ADMIN SEDANG MENGETIK, JANGAN TIMPA INPUT!
-      if (settings.start_time && !isEditingSchedule) {
-        // Ambil string langsung tanpa konversi timezone
-        const waktuString = settings.start_time.slice(0, 16);
-        setStartTimeInput(waktuString);
+      if (settings.start_time) {
+        // KONVERSI STANDAR: UTC dari DB -> Waktu Lokal Browser
+        const dateObj = new Date(settings.start_time)
+        const tzOffset = dateObj.getTimezoneOffset() * 60000
+        const localISOTime = new Date(dateObj.getTime() - tzOffset).toISOString().slice(0, 16)
+        setStartTimeInput(localISOTime)
       }
     } else {
       setIsQuizActive(false)
@@ -156,11 +150,11 @@ export default function AdminPage() {
     return () => clearInterval(interval)
   }, [isAuthenticated, selectedRoom])
 
-  // 6. Simpan Jadwal (FIX TIMEZONE)
+  // 6. Simpan Jadwal
   const handleSetSchedule = async () => {
     if (!startTimeInput) return alert('Pilih waktu terlebih dahulu!')
     
-    // KONVERSI WAKTU LOKAL ADMIN KE UTC UNTUK DATABASE
+    // KONVERSI STANDAR: Waktu Lokal Browser -> UTC untuk DB
     const localDate = new Date(startTimeInput)
     const isoTime = localDate.toISOString()
     
