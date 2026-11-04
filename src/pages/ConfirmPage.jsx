@@ -8,7 +8,7 @@ export default function ConfirmPage() {
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false) // <-- State untuk Modal
+  const [showSuccess, setShowSuccess] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   
@@ -30,7 +30,7 @@ export default function ConfirmPage() {
       if (dbError) throw dbError
 
       if (!data) {
-        setError('Kode konfirmasi salah! Periksa kembali kode Anda.')
+        setError('Kode konfirmasi salah. Periksa kembali kode Anda.')
         setLoading(false)
         return
       }
@@ -42,7 +42,6 @@ export default function ConfirmPage() {
       localStorage.setItem('kuis_code', data.code)
       localStorage.setItem('kuis_negara', data.negara)
 
-      // Tampilkan Modal Sukses
       setShowSuccess(true)
 
     } catch (err) {
@@ -66,7 +65,7 @@ export default function ConfirmPage() {
 
         <form onSubmit={handleConfirm} className="login-form-premium">
           <div className="input-wrapper-premium">
-            <span className="input-icon-premium">🔑</span>
+            <span className="input-icon-premium"></span>
             <input 
               type="text" 
               placeholder="RTM-IDXXXXXXXXXX" 
@@ -84,7 +83,6 @@ export default function ConfirmPage() {
         </form>
       </div>
 
-      {/* MODAL SUKSES (CUSTOM) */}
       {showSuccess && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -97,8 +95,7 @@ export default function ConfirmPage() {
             maxWidth: '400px', width: '100%', textAlign: 'center',
             animation: 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
           }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}></div>
-            <h2 style={{ color: 'white', margin: '0 0 1rem 0', fontSize: '1.5rem' }}>Konfirmasi Berhasil!</h2>
+            <h2 style={{ color: 'white', margin: '0 0 1rem 0', fontSize: '1.5rem' }}>Konfirmasi Berhasil</h2>
             <p style={{ color: '#a1a1aa', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               Akun Anda telah aktif. Selamat datang di Retium Quiz.
             </p>
@@ -112,7 +109,7 @@ export default function ConfirmPage() {
               onMouseOver={(e) => e.currentTarget.style.background = '#ff9a33'}
               onMouseOut={(e) => e.currentTarget.style.background = 'var(--orange)'}
             >
-              Masuk ke Dashboard 
+              Masuk ke Dashboard
             </button>
           </div>
         </div>
