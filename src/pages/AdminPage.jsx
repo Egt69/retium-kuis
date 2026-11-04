@@ -54,7 +54,8 @@ export default function AdminPage() {
     if (settings) {
       setIsQuizActive(settings.is_active)
       if (settings.start_time) {
-        setStartTimeInput(settings.start_time.slice(0, 16)) // <-- Ambil persis dari DB
+        // AMBIL PERSIS 16 KARAKTER PERTAMA (YYYY-MM-DDTHH:mm)
+        setStartTimeInput(settings.start_time.slice(0, 16)) 
       }
     } else {
       setIsQuizActive(false)
@@ -83,7 +84,7 @@ export default function AdminPage() {
           const m = Math.floor((distance % 3600000) / 60000).toString().padStart(2, '0')
           const s = Math.floor((distance % 60000) / 1000).toString().padStart(2, '0')
           setTimeToStart(`${h}:${m}:${s}`)
-        } else setTimeToStart('KUIS DIMULAI')
+        } else setTimeToStart('KUIM DIMULAI')
       } else setTimeToStart('DITUTUP')
     }, 1000)
     return () => clearInterval(interval)
@@ -91,10 +92,22 @@ export default function AdminPage() {
 
   const handleSetSchedule = async () => {
     if (!startTimeInput) return alert('Pilih waktu terlebih dahulu!')
-    // SIMPAN PERSIS SEPERTI YANG DIKETIK
-    const { error } = await supabase.from('quiz_settings').update({ start_time: startTimeInput, is_active: true }).eq('room_target', selectedRoom)
-    if (error) alert('Gagal: ' + error.message)
-    else alert('Jadwal berhasil diatur!')
+    
+    // KIRIM PERSIS SEPERTI YANG DIKETIK
+    const { error } = await supabase
+      .from('quiz_settings')
+      .update({ 
+        start_time: startTimeInput, 
+        is_active: true 
+      })
+      .eq('room_target', selectedRoom)
+
+    if (error) {
+      alert('Gagal set jadwal: ' + error.message)
+    } else {
+      alert(`Jadwal untuk room ${selectedRoom} berhasil diatur!`)
+      fetchSettingsAndData() // Refresh data
+    }
   }
 
   const handleStopQuiz = async () => {
@@ -149,7 +162,6 @@ export default function AdminPage() {
     <div style={{ minHeight: '100vh', background: '#09090b', padding: '3rem 2rem', color: '#f4f4f5', fontFamily: 'Montserrat, sans-serif' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
-        {/* HEADER */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3rem', borderBottom: '1px solid #27272a', paddingBottom: '1.5rem' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '1.8rem' }}>Dashboard Admin</h1>
@@ -158,7 +170,6 @@ export default function AdminPage() {
           <button onClick={handleReset} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #27272a', background: 'transparent', color: '#a1a1aa' }}>Reset Live</button>
         </div>
 
-        {/* TOP GRID */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ background: '#18181b', padding: '1.5rem', borderRadius: '16px', border: '1px solid #27272a' }}>
             <h3 style={{ margin: '0 0 1rem 0' }}>Kontrol Jadwal</h3>
@@ -185,7 +196,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* BOTTOM GRID */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
           <div style={{ background: '#18181b', borderRadius: '16px', border: '1px solid #27272a', padding: '1.5rem' }}>
             <h3 style={{ margin: '0 0 1.5rem 0' }}>Live Monitor</h3>
@@ -228,7 +238,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* MODAL DATA PESERTA */}
         {showAllData && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '2rem' }}>
             <div style={{ background: '#0a0e1a', width: '100%', maxWidth: '1000px', maxHeight: '85vh', borderRadius: '24px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,122,0,0.3)' }}>
