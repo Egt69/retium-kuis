@@ -43,9 +43,13 @@ export default function AdminPage() {
     }
   }
 
-  // FUNGSI INI HANYA BERJALAN SAAT PERTAMA LOAD ATAU GANTI ROOM
+  // FUNGSI LOAD ROOM DATA (TANPA CONFIRM CODE)
   const loadRoomData = async () => {
-    const { data: regData } = await supabase.from('access_codes').select('*')
+    // Hanya ambil kolom yang aman
+    const { data: regData } = await supabase
+      .from('access_codes')
+      .select('id, used_by, wallet_address, code, used, negara, created_at')
+    
     if (regData) setRegisteredList(regData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
 
     const { data: roomData } = await supabase.from('rooms').select('*')
@@ -63,7 +67,6 @@ export default function AdminPage() {
     }
   }
 
-  // AMBIL DATA LIVE SAJA (SETIAP 2 DETIK), TANPA MENYENTUH KOTAK INPUT
   useEffect(() => {
     if (!isAuthenticated) return
     fetchData()
@@ -71,7 +74,6 @@ export default function AdminPage() {
     return () => clearInterval(intervalId)
   }, [isAuthenticated])
 
-  // LOAD JADWAL HANYA SAAT ROOM DIGANTI ATAU PERTAMA LOGIN
   useEffect(() => {
     if (!isAuthenticated) return
     loadRoomData()
@@ -98,21 +100,9 @@ export default function AdminPage() {
 
   const handleSetSchedule = async () => {
     if (!startTimeInput) return alert('Pilih waktu terlebih dahulu!')
-    
-    const { error } = await supabase
-      .from('quiz_settings')
-      .update({ 
-        start_time: startTimeInput, 
-        is_active: true 
-      })
-      .eq('room_target', selectedRoom)
-
-    if (error) {
-      alert('Gagal set jadwal: ' + error.message)
-    } else {
-      alert(`Jadwal untuk room ${selectedRoom} berhasil diatur!`)
-      loadRoomData()
-    }
+    const { error } = await supabase.from('quiz_settings').update({ start_time: startTimeInput, is_active: true }).eq('room_target', selectedRoom)
+    if (error) alert('Gagal: ' + error.message)
+    else { alert(`Jadwal ${selectedRoom} berhasil diatur!`); loadRoomData() }
   }
 
   const handleStopQuiz = async () => {
@@ -179,7 +169,7 @@ export default function AdminPage() {
           <div style={{ background: '#18181b', padding: '1.5rem', borderRadius: '16px', border: '1px solid #27272a' }}>
             <h3 style={{ margin: '0 0 1rem 0' }}>Kontrol Jadwal</h3>
             <select value={selectedRoom} onChange={(e) => setSelectedRoom(e.target.value)} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: '#09090b', color: 'white', border: '1px solid #333', marginBottom: '1rem' }}>
-              {rooms.map(r => <option key={r.kode_negara} value={r.kode_negara}>{r.is_global ? '🌍 Global' : `🏳️ ${r.nama_negara}`}</option>)}
+              {rooms.map(r => <option key={r.kode_negara} value={r.kode_negara}>{r.is_global ? 'Global' : `${r.nama_negara}`}</option>)}
             </select>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
               <input type="datetime-local" value={startTimeInput} onChange={(e) => setStartTimeInput(e.target.value)} style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', background: '#09090b', color: 'white', border: '1px solid #333' }} />
@@ -252,7 +242,7 @@ export default function AdminPage() {
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button onClick={handleDownloadBackup} style={{ padding: '0 1rem', background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e', color: '#22c55e', borderRadius: '8px' }}>Backup</button>
                     <button onClick={handleResetAllParticipants} style={{ padding: '0 1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '8px' }}>Reset</button>
-                    <button onClick={() => setShowAllData(false)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'transparent', border: '1px solid white', color: 'white' }}>✕</button>
+                    <button onClick={() => setShowAllData(false)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'transparent', border: '1px solid white', color: 'white' }}>X</button>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
