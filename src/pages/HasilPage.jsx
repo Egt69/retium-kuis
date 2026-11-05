@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import ParticleBackground from '../components/ParticleBackground'
 import '../styles/kuis.css'
 
 export default function HasilPage() {
@@ -27,13 +28,11 @@ export default function HasilPage() {
     }
 
     async function fetchLeaderboard() {
-      // Ambil data tanpa urutan (kita urutkan manual di JS)
       const { data, error } = await supabase
         .from('results')
         .select('username, skor_total, jumlah_benar, waktu_selesai')
 
       if (!error && data) {
-        // Fungsi mengubah "01 Menit 44 Detik" menjadi total detik (104)
         const parseWaktuKeDetik = (teksWaktu) => {
           if (!teksWaktu) return 999999
           const cocok = teksWaktu.match(/(\d+)\s*Menit\s*(\d+)\s*Detik/)
@@ -43,7 +42,6 @@ export default function HasilPage() {
           return 999999
         }
 
-        // Urutkan manual: Skor Tertinggi -> Waktu Tercepat
         const sortedData = data.sort((a, b) => {
           if (b.skor_total !== a.skor_total) {
             return b.skor_total - a.skor_total
@@ -60,12 +58,15 @@ export default function HasilPage() {
   }, [navigate])
 
   const handleMainLagi = () => {
+    // HANYA hapus data hasil skor sementara, JANGAN hapus data login (kuis_username, kuis_code)
     localStorage.removeItem('skor_akhir')
     localStorage.removeItem('hasil_benar')
     localStorage.removeItem('hasil_salah')
     localStorage.removeItem('hasil_pass')
     localStorage.removeItem('waktu_selesai')
-    navigate('/')
+    
+    // Arahkan kembali ke Dashboard, bukan halaman Login
+    navigate('/dashboard')
   }
 
   const getMedali = (index) => {
@@ -82,7 +83,6 @@ export default function HasilPage() {
     return 'rank-other'
   }
 
-  // Logika Pagination
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
   const currentItems = leaderboard.slice(indexOfFirstItem, indexOfLastItem)
@@ -90,19 +90,14 @@ export default function HasilPage() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
   return (
-    <>
-      <div className="aurora-bg">
-        <div className="aurora-blob blob-1"></div>
-        <div className="aurora-blob blob-2"></div>
-        <div className="aurora-blob blob-3"></div>
-      </div>
-      <div className="bg-grid"></div>
+    <div className="login-page-wrapper">
+      <ParticleBackground />
 
-      <div className="app-container">
+      <div className="app-container" style={{ zIndex: 10 }}>
         {/* TAMPILAN 1: RINGKASAN HASIL */}
         {!showLeaderboard && (
           <div className="animation-fade-in">
-            <div className="result-box">
+            <div className="result-box" style={{ background: 'rgba(18, 26, 46, 0.6)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div className="result-title">SKOR AKHIR KAMU</div>
               <div className="result-score">{skorAkhir}</div>
               
@@ -139,7 +134,7 @@ export default function HasilPage() {
         {/* TAMPILAN 2: LEADERBOARD */}
         {showLeaderboard && (
           <div className="animation-slide-up">
-            <div className="leaderboard-card">
+            <div className="leaderboard-card" style={{ background: 'rgba(18, 26, 46, 0.6)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)' }}>
               <h2 className="lb-title">🏆 Papan Peringkat Peserta</h2>
               <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
                 Total {leaderboard.length} peserta terdaftar
@@ -173,7 +168,6 @@ export default function HasilPage() {
                     })}
                   </div>
 
-                  {/* Navigasi Halaman */}
                   {totalPages > 1 && (
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem' }}>
                       <button 
@@ -212,11 +206,11 @@ export default function HasilPage() {
             </div>
 
             <button className="btn-primary" onClick={handleMainLagi} style={{ marginTop: '2rem' }}>
-              KEMBALI KE HALAMAN UTAMA
+              KEMBALI KE DASHBOARD
             </button>
           </div>
         )}
       </div>
-    </>
+    </div>
   )
 }
