@@ -1361,3 +1361,14 @@ body {
   color: #ef4444;
   font-weight: 800;
 }
+/* Warna Kuning untuk Pilihan User Sementara */
+.option-btn-premium.selected-yellow {
+  border-color: #facc15 !important;
+  background: rgba(250, 204, 21, 0.1) !important;
+  color: #facc15 !important;
+}
+
+.option-btn-premium.selected-yellow .option-badge {
+  background: #facc15 !important;
+  color: #000 !important;
+}
