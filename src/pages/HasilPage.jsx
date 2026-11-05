@@ -28,9 +28,11 @@ export default function HasilPage() {
     }
 
     async function fetchLeaderboard() {
+      // Ambil data dan urutkan langsung berdasarkan skor_total tertinggi di Supabase
       const { data, error } = await supabase
         .from('results')
         .select('username, skor_total, jumlah_benar, waktu_selesai')
+        .order('skor_total', { ascending: false })
 
       if (!error && data) {
         const parseWaktuKeDetik = (teksWaktu) => {
@@ -42,6 +44,7 @@ export default function HasilPage() {
           return 999999
         }
 
+        // Penyempurnaan sorting: jika skor sama, urutkan berdasarkan waktu tercepat
         const sortedData = data.sort((a, b) => {
           if (b.skor_total !== a.skor_total) {
             return b.skor_total - a.skor_total
@@ -58,14 +61,14 @@ export default function HasilPage() {
   }, [navigate])
 
   const handleMainLagi = () => {
-    // HANYA hapus data hasil skor sementara, JANGAN hapus data login (kuis_username, kuis_code)
+    // Bersihkan semua data riwayat kuis agar bersih saat kembali ke dashboard
     localStorage.removeItem('skor_akhir')
     localStorage.removeItem('hasil_benar')
     localStorage.removeItem('hasil_salah')
     localStorage.removeItem('hasil_pass')
     localStorage.removeItem('waktu_selesai')
     
-    // Arahkan kembali ke Dashboard, bukan halaman Login
+    // Arahkan kembali ke Dashboard
     navigate('/dashboard')
   }
 
@@ -124,7 +127,7 @@ export default function HasilPage() {
             <button 
               className="btn-primary" 
               onClick={() => setShowLeaderboard(true)}
-              style={{ fontSize: '1.2rem', padding: '1.2rem' }}
+              style={{ fontSize: '1.2rem', padding: '1.2rem', cursor: 'pointer' }}
             >
               LIHAT SEMUA LEADERBOARD 🏆
             </button>
@@ -205,7 +208,7 @@ export default function HasilPage() {
               )}
             </div>
 
-            <button className="btn-primary" onClick={handleMainLagi} style={{ marginTop: '2rem' }}>
+            <button className="btn-primary" onClick={handleMainLagi} style={{ marginTop: '2rem', cursor: 'pointer' }}>
               KEMBALI KE DASHBOARD
             </button>
           </div>
