@@ -23,9 +23,13 @@ export default function KuisPage() {
   const [isWaiting, setIsWaiting] = useState(true)
   const [countdown, setCountdown] = useState(0)
 
+  const [totalTimeLeft, setTotalTimeLeft] = useState(0)
+  const [totalDuration, setTotalDuration] = useState(0)
+
   const [liveLeaderboard, setLiveLeaderboard] = useState([])
 
   const timerRef = useRef(null)
+  const totalTimerRef = useRef(null)
 
   // 1. Cek Jadwal (Ruang Tunggu)
   useEffect(() => {
@@ -79,12 +83,46 @@ export default function KuisPage() {
     fetchQuestions()
   }, [navigate, username, code, isWaiting])
 
-  // 3. Rekam Waktu Mulai
+  // 3. Setup Timer Total (Anti-Cheat)
   useEffect(() => {
-    if (!isLoading && !isWaiting && questions.length > 0 && currentIndex === 0 && startTime === null) {
-      setStartTime(Date.now())
+    if (isLoading || isWaiting || questions.length === 0) return
+
+    const durasiTotal = questions.length * 20
+    setTotalDuration(durasiTotal)
+
+    const savedStartTime = localStorage.getItem('kuis_total_start')
+    let startMs
+
+    if (savedStartTime) {
+      startMs = parseInt(savedStartTime, 10)
+    } else {
+      startMs = Date.now()
+      localStorage.setItem('kuis_total_start', startMs.toString())
     }
-  }, [isLoading, isWaiting, questions, currentIndex, startTime])
+
+    setStartTime(startMs)
+
+    const hitungSisaWaktu = () => {
+      const now = Date.now()
+      const elapsed = Math.floor((now - startMs) / 1000)
+      const sisa = durasiTotal - elapsed
+
+      if (sisa <= 0) {
+        clearInterval(totalTimerRef.current)
+        setTotalTimeLeft(0)
+        if (!isLoading) {
+          simpanHasil(skor)
+        }
+      } else {
+        setTotalTimeLeft(sisa)
+      }
+    }
+
+    hitungSisaWaktu()
+    totalTimerRef.current = setInterval(hitungSisaWaktu, 1000)
+
+    return () => clearInterval(totalTimerRef.current)
+  }, [isLoading, isWaiting, questions, skor])
 
   // 4. Fetch Leaderboard Live
   useEffect(() => {
@@ -119,7 +157,7 @@ export default function KuisPage() {
     return () => clearInterval(intervalId)
   }, [isLoading, isWaiting])
 
-  // 5. Timer Berjalan
+  // 5. Timer Per Soal (Berjalan)
   useEffect(() => {
     if (isLoading || questions.length === 0 || isWaiting) return
 
@@ -136,7 +174,7 @@ export default function KuisPage() {
     return () => clearInterval(timerRef.current)
   }, [currentIndex, isLoading, questions, isWaiting])
 
-  // 6. Waktu Habis
+  // 6. Waktu Habis (Per Soal)
   useEffect(() => {
     if (timeLeft === 0 && !isLoading && questions.length > 0 && !isWaiting) {
       if (selectedOption === null) {
@@ -247,9 +285,21 @@ export default function KuisPage() {
 
       await supabase.from('live_scores').update({ soal_sekarang: 16 }).eq('username', username)
 
-      localStorage.removeItem('kuis_username')
-      localStorage.removeItem('kuis_code')
+      // --- HANGUSKAN KODE AKSES ---
+      if (code) {
+        await supabase.from('access_codes').update({ used: true }).eq('code', code)
+      }
+
+      // --- MATIKAN ROOM SECARA OTOMATIS (AUTO-CLOSE) ---
+      const userRoom = localStorage.getItem('kuis_room') || 'GLB'
+      await supabase.from('quiz_settings').update({ is_active: false }).eq('room_target', userRoom)
+      // ---------------------------------------------------
+
+      // --- HANYA HAPUS DATA KUIS, JANGAN HAPUS kuis_username ---
+      localStorage.removeItem('kuis_code') 
       localStorage.removeItem('kuis_start_time')
+      localStorage.removeItem('kuis_total_start')
+      
       localStorage.setItem('skor_akhir', skorAkhir)
       localStorage.setItem('hasil_benar', jumlahBenar)
       localStorage.setItem('hasil_salah', jumlahSalah)
@@ -293,7 +343,7 @@ export default function KuisPage() {
             </div> 
           </div> 
         </div> 
-      </> 
+      </>
     )
   }
 
@@ -317,20 +367,58 @@ export default function KuisPage() {
         {/* KOLOM KIRI (SOAL KUIS) */}
         <div className="kuis-main-column">
           
+          {/* HEADER DIUBAH TOTAL */}
           <div className="kuis-header">
             <div className="score-badge-premium">
               <span className="score-label">SKOR</span>
               <span className={`score-value ${skor >= 0 ? 'text-benar' : 'text-salah'}`}>{skor}</span>
             </div>
             
-            <div className={`timer-pill-premium ${isDanger ? 'danger' : ''}`}>
-              <span className="timer-number">{timeLeft}</span>
-              <span className="timer-unit">s</span>
-              <div className="timer-bar-bg">
-                <div 
-                  className="timer-bar-fill" 
-                  style={{ width: `${(timeLeft / 20) * 100}%` }}
-                ></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              
+              {/* Timer Total */}
+              <div style={{ 
+                background: 'rgba(18, 26, 46, 0.8)', 
+                padding: '0.5rem 1rem', 
+                borderRadius: '8px', 
+                border: '1px solid rgba(255,122,0,0.3)', 
+                color: '#a1a1aa',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+              }}>
+                <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Sisa Waktu</span>
+                <strong style={{ color: '#ff7a00', fontSize: '1.2rem', fontFamily: 'monospace' }}>
+                  {Math.floor(totalTimeLeft / 60).toString().padStart(2, '0')}:{(totalTimeLeft % 60).toString().padStart(2, '0')}
+                </strong>
+              </div>
+
+              {/* Lingkaran Timer SVG */}
+              <div style={{ 
+                position: 'relative', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                width: '65px', 
+                height: '65px', 
+                background: 'rgba(18, 26, 46, 0.8)',
+                borderRadius: '50%',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <svg style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+                  <circle cx="32.5" cy="32.5" r="28" stroke="rgba(255,255,255,0.05)" strokeWidth="4" fill="transparent" />
+                  <circle 
+                    cx="32.5" cy="32.5" r="28" 
+                    stroke={isDanger ? '#ef4444' : '#ff7a00'} 
+                    strokeWidth="4" fill="transparent" 
+                    strokeDasharray="175.9" 
+                    strokeDashoffset={175.9 - (175.9 * timeLeft) / 20} 
+                    style={{ transition: 'stroke-dashoffset 1s linear' }}
+                  />
+                </svg>
+                <span style={{ fontSize: '1.3rem', fontWeight: '800', color: isDanger ? '#ef4444' : 'white', zIndex: 2 }}>
+                  {timeLeft}
+                </span>
               </div>
             </div>
           </div>
