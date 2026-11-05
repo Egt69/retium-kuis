@@ -43,9 +43,7 @@ export default function AdminPage() {
     }
   }
 
-  // FUNGSI LOAD ROOM DATA (TANPA CONFIRM CODE)
   const loadRoomData = async () => {
-    // Hanya ambil kolom yang aman
     const { data: regData } = await supabase
       .from('access_codes')
       .select('id, used_by, wallet_address, code, used, negara, created_at')
@@ -79,24 +77,50 @@ export default function AdminPage() {
     loadRoomData()
   }, [isAuthenticated, selectedRoom])
 
+  // --- BAGIAN YANG DIUBAH: TIMER DINAMIS & AUTO-CLOSE ---
   useEffect(() => {
     if (!isAuthenticated) return 
+    
     const interval = setInterval(async () => {
       const { data: settings } = await supabase.from('quiz_settings').select('start_time, is_active').eq('room_target', selectedRoom).maybeSingle()
+      
       if (settings && settings.is_active) {
         const now = new Date().getTime()
         const start = new Date(settings.start_time).getTime()
         const distance = start - now
+
+        // 1. Ambil total soal dari database
+        const { count } = await supabase.from('questions').select('*', { count: 'exact', head: true })
+        const totalSoal = count || 5
+        
+        // 2. Hitung durasi (Total Soal x 20 Detik)
+        const durasiKuisMs = (totalSoal * 20) * 1000 
+        const timeElapsed = now - start
+
         if (distance > 0) {
+          // Belum dimulai
           const h = Math.floor((distance % 86400000) / 3600000).toString().padStart(2, '0')
           const m = Math.floor((distance % 3600000) / 60000).toString().padStart(2, '0')
           const s = Math.floor((distance % 60000) / 1000).toString().padStart(2, '0')
           setTimeToStart(`${h}:${m}:${s}`)
-        } else setTimeToStart('KUIS DIMULAI')
-      } else setTimeToStart('DITUTUP')
+        } else if (timeElapsed >= durasiKuisMs) {
+          // Waktu habis (LEWAT DURASI)
+          setTimeToStart('CLOSED')
+          setIsQuizActive(false)
+          await supabase.from('quiz_settings').update({ is_active: false }).eq('room_target', selectedRoom)
+        } else {
+          // Sedang berlangsung
+          setTimeToStart('KUIS DIMULAI')
+        }
+      } else {
+        setTimeToStart('DITUTUP')
+        setIsQuizActive(false)
+      }
     }, 1000)
+
     return () => clearInterval(interval)
   }, [isAuthenticated, selectedRoom])
+  // --------------------------------------------------------
 
   const handleSetSchedule = async () => {
     if (!startTimeInput) return alert('Pilih waktu terlebih dahulu!')
