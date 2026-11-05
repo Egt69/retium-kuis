@@ -59,7 +59,7 @@ export default function KuisPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // 2. Ambil Soal (FILTER REGION)
+  // 2. Pre-fetch Semua Soal Sekaligus (FILTER REGION)
   useEffect(() => {
     if (!username) {
       navigate('/')
@@ -129,7 +129,7 @@ export default function KuisPage() {
     return () => clearInterval(totalTimerRef.current)
   }, [isLoading, isWaiting, questions])
 
-  // 4. Fetch Leaderboard Live
+  // 4. Fetch Leaderboard Live (Dioptimalkan menjadi 6 detik agar ramah Free Tier)
   useEffect(() => {
     if (isLoading || isWaiting) return
 
@@ -158,7 +158,7 @@ export default function KuisPage() {
     }
 
     fetchLiveLeaderboard()
-    const intervalId = setInterval(fetchLiveLeaderboard, 2000)
+    const intervalId = setInterval(fetchLiveLeaderboard, 6000) // Diubah ke 6 detik
     return () => clearInterval(intervalId)
   }, [isLoading, isWaiting])
 
@@ -179,7 +179,7 @@ export default function KuisPage() {
     return () => clearInterval(timerRef.current)
   }, [currentIndex, isLoading, questions, isWaiting])
 
-  // 6. Waktu Habis (Per Soal) & Evaluasi Jawaban Terakhir (Jeda 3 Detik untuk Semua Soal)
+  // 6. Waktu Habis (Per Soal) & Evaluasi Jawaban Terakhir
   useEffect(() => {
     if (timeLeft === 0 && !isLoading && questions.length > 0 && !isWaiting) {
       const soalSekarang = questions[currentIndex]
@@ -190,10 +190,8 @@ export default function KuisPage() {
         status = isBenar ? 'benar' : 'salah'
       }
 
-      // Proses jawaban dan skor saat waktu habis
       prosesJawaban(selectedOption, status)
 
-      // Jeda 3 detik agar warna hijau/merah terlihat di semua soal (termasuk soal terakhir)
       nextTimeoutRef.current = setTimeout(() => {
         handleNext()
       }, 3000)
@@ -202,7 +200,7 @@ export default function KuisPage() {
     }
   }, [timeLeft, isLoading, questions, isWaiting])
 
-  // 7. Klik Opsi (Bisa ganti-ganti selama waktu belum habis)
+  // 7. Klik Opsi
   const handleOptionClick = (opsi) => {
     if (timeLeft === 0) return
     setSelectedOption(opsi)
@@ -241,7 +239,7 @@ export default function KuisPage() {
     })
   }
 
-  // 9. Lanjut Soal atau Simpan Hasil jika sudah soal terakhir
+  // 9. Lanjut Soal atau Simpan Hasil jika soal terakhir
   const handleNext = async () => {
     setSelectedOption(null)
 
@@ -253,7 +251,7 @@ export default function KuisPage() {
     }
   }
 
-  // 10. Simpan Hasil Akhir
+  // 10. Simpan Hasil Akhir (Sekali Saja di Akhir Kuis)
   const simpanHasil = async (skorAkhir) => {
     setIsLoading(true)
     const jumlahBenar = answersLog.filter(a => a.status === 'benar').length
@@ -442,13 +440,10 @@ export default function KuisPage() {
 
               let btnClass = 'option-btn-premium'
               
-              // Logika styling tombol
               if (timeLeft === 0) {
-                // Ketika waktu habis: kunci jawaban benar jadi hijau, pilihan user yang salah jadi merah
                 if (isCorrectAnswer) btnClass += ' correct-blink'
                 else if (isUserChoice) btnClass += ' wrong-shake'
               } else {
-                // Selama waktu berjalan: pilihan aktif berwarna kuning
                 if (isUserChoice) btnClass += ' bg-yellow-stable'
               }
 
@@ -484,7 +479,6 @@ export default function KuisPage() {
             })}
           </div>
 
-          {/* Teks Shimmer Loading saat menghitung hasil akhir di soal terakhir */}
           {isLastQuestion && timeLeft === 0 && (
             <div className="loading-shimmer-container">
               <div className="loading-shimmer-text">
