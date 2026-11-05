@@ -7,6 +7,7 @@ import ConfirmPage from './pages/ConfirmPage'
 import DashboardPage from './pages/DashboardPage'
 import EditProfilePage from './pages/EditProfilePage'
 import HistoryPage from './pages/HistoryPage' 
+import ManageQuestionsPage from './pages/ManageQuestionsPage' // <--- IMPORT HALAMAN BARU
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/kuis" element={<KuisPage />} />
         <Route path="/hasil" element={<HasilPage />} />
         <Route path="/admin-rahasia" element={<AdminPage />} />
+        <Route path="/manage-questions" element={<ManageQuestionsPage />} /> {/* <--- ROUTE BARU */}
         <Route path="/konfirmasi" element={<ConfirmPage />} />
       </Routes>
     </BrowserRouter>
