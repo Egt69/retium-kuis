@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import ParticleBackground from '../components/ParticleBackground'
-import { useLanguage } from '../lib/LanguageContext.jsx'
+import { useLanguage } from '../lib/LanguageContext'
 import '../styles/kuis.css'
 
 export default function DashboardPage() {
