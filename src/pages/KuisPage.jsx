@@ -30,6 +30,7 @@ export default function KuisPage() {
 
   const timerRef = useRef(null)
   const totalTimerRef = useRef(null)
+  const nextTimeoutRef = useRef(null)
 
   // 1. Cek Jadwal (Ruang Tunggu)
   useEffect(() => {
@@ -58,7 +59,7 @@ export default function KuisPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // 2. Ambil Soal
+  // 2. Ambil Soal (FILTER REGION)
   useEffect(() => {
     if (!username) {
       navigate('/')
@@ -71,7 +72,14 @@ export default function KuisPage() {
     if (isWaiting) return 
 
     async function fetchQuestions() {
-      const { data, error } = await supabase.from('questions').select('*').order('nomor', { ascending: true })
+      const userRegion = localStorage.getItem('kuis_room') || 'GLB'
+      
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('region', userRegion)
+        .order('id', { ascending: true })
+      
       if (error) {
         alert('Gagal memuat soal: ' + error.message)
         navigate('/dashboard')
@@ -83,7 +91,7 @@ export default function KuisPage() {
     fetchQuestions()
   }, [navigate, username, code, isWaiting])
 
-  // 3. Setup Timer Total (Anti-Cheat)
+  // 3. Setup Timer Total
   useEffect(() => {
     if (isLoading || isWaiting || questions.length === 0) return
 
@@ -110,9 +118,6 @@ export default function KuisPage() {
       if (sisa <= 0) {
         clearInterval(totalTimerRef.current)
         setTotalTimeLeft(0)
-        if (!isLoading) {
-          simpanHasil(skor)
-        }
       } else {
         setTotalTimeLeft(sisa)
       }
@@ -122,7 +127,7 @@ export default function KuisPage() {
     totalTimerRef.current = setInterval(hitungSisaWaktu, 1000)
 
     return () => clearInterval(totalTimerRef.current)
-  }, [isLoading, isWaiting, questions, skor])
+  }, [isLoading, isWaiting, questions])
 
   // 4. Fetch Leaderboard Live
   useEffect(() => {
@@ -157,7 +162,7 @@ export default function KuisPage() {
     return () => clearInterval(intervalId)
   }, [isLoading, isWaiting])
 
-  // 5. Timer Per Soal (Berjalan)
+  // 5. Timer Per Soal (BERJALAN)
   useEffect(() => {
     if (isLoading || questions.length === 0 || isWaiting) return
 
@@ -174,29 +179,36 @@ export default function KuisPage() {
     return () => clearInterval(timerRef.current)
   }, [currentIndex, isLoading, questions, isWaiting])
 
-  // 6. Waktu Habis (Per Soal)
+  // 6. Waktu Habis (Per Soal) & Evaluasi Jawaban Terakhir (Jeda 3 Detik untuk Semua Soal)
   useEffect(() => {
     if (timeLeft === 0 && !isLoading && questions.length > 0 && !isWaiting) {
-      if (selectedOption === null) {
-        prosesJawaban(null, 'pass')
-      }
-      const changeTimeout = setTimeout(() => {
-        handleNext()
-      }, 800)
-      return () => clearTimeout(changeTimeout)
-    }
-  }, [timeLeft, isLoading, questions, selectedOption, isWaiting])
+      const soalSekarang = questions[currentIndex]
+      let status = 'pass'
 
-  // 7. Klik Opsi
+      if (selectedOption !== null) {
+        const isBenar = selectedOption === soalSekarang.jawaban_benar
+        status = isBenar ? 'benar' : 'salah'
+      }
+
+      // Proses jawaban dan skor saat waktu habis
+      prosesJawaban(selectedOption, status)
+
+      // Jeda 3 detik agar warna hijau/merah terlihat di semua soal (termasuk soal terakhir)
+      nextTimeoutRef.current = setTimeout(() => {
+        handleNext()
+      }, 3000)
+      
+      return () => clearTimeout(nextTimeoutRef.current)
+    }
+  }, [timeLeft, isLoading, questions, isWaiting])
+
+  // 7. Klik Opsi (Bisa ganti-ganti selama waktu belum habis)
   const handleOptionClick = (opsi) => {
-    if (selectedOption !== null || timeLeft === 0) return
+    if (timeLeft === 0) return
     setSelectedOption(opsi)
-    const soalSekarang = questions[currentIndex]
-    const isBenar = opsi === soalSekarang.jawaban_benar
-    prosesJawaban(opsi, isBenar ? 'benar' : 'salah')
   }
 
-  // 8. Proses Jawaban
+  // 8. Proses Jawaban & Update Live Score
   const prosesJawaban = (opsiDipilih, status) => {
     const skorBaru = hitungSkor(skor, status)
     setSkor(skorBaru)
@@ -229,7 +241,7 @@ export default function KuisPage() {
     })
   }
 
-  // 9. Lanjut Soal
+  // 9. Lanjut Soal atau Simpan Hasil jika sudah soal terakhir
   const handleNext = async () => {
     setSelectedOption(null)
 
@@ -241,7 +253,7 @@ export default function KuisPage() {
     }
   }
 
-  // 10. Simpan Hasil
+  // 10. Simpan Hasil Akhir
   const simpanHasil = async (skorAkhir) => {
     setIsLoading(true)
     const jumlahBenar = answersLog.filter(a => a.status === 'benar').length
@@ -285,17 +297,13 @@ export default function KuisPage() {
 
       await supabase.from('live_scores').update({ soal_sekarang: 16 }).eq('username', username)
 
-      // --- HANGUSKAN KODE AKSES ---
       if (code) {
         await supabase.from('access_codes').update({ used: true }).eq('code', code)
       }
 
-      // --- MATIKAN ROOM SECARA OTOMATIS (AUTO-CLOSE) ---
       const userRoom = localStorage.getItem('kuis_room') || 'GLB'
       await supabase.from('quiz_settings').update({ is_active: false }).eq('room_target', userRoom)
-      // ---------------------------------------------------
 
-      // --- HANYA HAPUS DATA KUIS, JANGAN HAPUS kuis_username ---
       localStorage.removeItem('kuis_code') 
       localStorage.removeItem('kuis_start_time')
       localStorage.removeItem('kuis_total_start')
@@ -329,7 +337,7 @@ export default function KuisPage() {
               {countdown}
             </div>
             <p style={{ color: 'var(--text-muted)', marginTop: '1rem', letterSpacing: '2px' }}>DETIK LAGI</p>
-                       
+                 
             <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.85rem', fontFamily: 'monospace' }}>
               <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#22c55e' }}>
                 BENAR: <strong style={{ color: 'white' }}>+10</strong>
@@ -364,10 +372,8 @@ export default function KuisPage() {
       <ParticleBackground />
       <div className="kuis-layout-wrapper">
         
-        {/* KOLOM KIRI (SOAL KUIS) */}
         <div className="kuis-main-column">
           
-          {/* HEADER DIUBAH TOTAL */}
           <div className="kuis-header">
             <div className="score-badge-premium">
               <span className="score-label">SKOR</span>
@@ -376,7 +382,6 @@ export default function KuisPage() {
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               
-              {/* Timer Total */}
               <div style={{ 
                 background: 'rgba(18, 26, 46, 0.8)', 
                 padding: '0.5rem 1rem', 
@@ -393,7 +398,6 @@ export default function KuisPage() {
                 </strong>
               </div>
 
-              {/* Lingkaran Timer SVG */}
               <div style={{ 
                 position: 'relative', 
                 display: 'flex', 
@@ -437,26 +441,51 @@ export default function KuisPage() {
               const isUserChoice = opt === selectedOption
 
               let btnClass = 'option-btn-premium'
-              if (selectedOption !== null || timeLeft === 0) {
+              
+              // Logika styling tombol
+              if (timeLeft === 0) {
+                // Ketika waktu habis: kunci jawaban benar jadi hijau, pilihan user yang salah jadi merah
                 if (isCorrectAnswer) btnClass += ' correct-blink'
                 else if (isUserChoice) btnClass += ' wrong-shake'
+              } else {
+                // Selama waktu berjalan: pilihan aktif berwarna kuning
+                if (isUserChoice) btnClass += ' bg-yellow-stable'
               }
+
+              const isYellow = isUserChoice && timeLeft > 0;
+              const isGreen = isCorrectAnswer && timeLeft === 0;
+              const isRed = isUserChoice && !isCorrectAnswer && timeLeft === 0;
 
               return (
                 <button
                   key={opt}
                   className={btnClass}
                   onClick={() => handleOptionClick(opt)}
-                  disabled={selectedOption !== null || timeLeft === 0}
+                  disabled={timeLeft === 0}
+                  style={{
+                    border: isYellow ? '2px solid #facc15' : 
+                            isGreen ? '2px solid #22c55e' : 
+                            isRed ? '2px solid #ef4444' : '',
+                    background: isYellow ? 'rgba(250, 204, 21, 0.1)' : 
+                                isGreen ? 'rgba(34, 197, 94, 0.15)' : 
+                                isRed ? 'rgba(239, 68, 68, 0.15)' : '',
+                    boxShadow: isYellow ? '0 0 15px rgba(250, 204, 21, 0.3)' : 
+                               isGreen ? '0 0 15px rgba(34, 197, 94, 0.3)' : 
+                               isRed ? '0 0 15px rgba(239, 68, 68, 0.3)' : '',
+                  }}
                 >
-                  <span className="option-badge">{opt}</span> 
+                  <span className="option-badge" style={{
+                    background: isYellow ? '#facc15' : isGreen ? '#22c55e' : isRed ? '#ef4444' : '',
+                    color: (isYellow || isGreen) ? '#000' : '',
+                  }}>{opt}</span> 
                   <span className="option-text">{textOpsi}</span>
                 </button>
               )
             })}
           </div>
 
-          {isLastQuestion && selectedOption !== null && (
+          {/* Teks Shimmer Loading saat menghitung hasil akhir di soal terakhir */}
+          {isLastQuestion && timeLeft === 0 && (
             <div className="loading-shimmer-container">
               <div className="loading-shimmer-text">
                 MENGHITUNG NILAI & MEMUAT LEADERBOARD
@@ -468,9 +497,7 @@ export default function KuisPage() {
           )}
         </div>
 
-        {/* KOLOM KANAN (PAPAN PERINGKAT) */}
         <div className="leaderboard-premium">
-          
           <div className="lb-header-premium">
             <h3 className="lb-title-premium">PAPAN PERINGKAT</h3>
           </div>
