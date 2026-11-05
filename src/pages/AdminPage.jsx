@@ -6,7 +6,9 @@ import '../styles/kuis.css'
 export default function AdminPage() {
   const navigate = useNavigate()
 
-  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('admin_auth') === 'true')
+  // Default state dimulai dari false agar aman dan wajib verifikasi
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -26,16 +28,30 @@ export default function AdminPage() {
   // STATE UNTUK CUSTOM MODAL (Alert & Konfirmasi)
   const [modalConfirm, setModalConfirm] = useState({ show: false, type: '', title: '', message: '', action: null })
 
+  // Cek sesi login saat halaman pertama kali dimuat
+  useEffect(() => {
+    const checkAdminSession = async () => {
+      const savedAuth = localStorage.getItem('admin_auth')
+      if (savedAuth === 'true') {
+        setIsAuthenticated(true)
+      }
+      setIsCheckingAuth(false)
+    }
+    checkAdminSession()
+  }, [])
+
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
     const { data, error } = await supabase.rpc('validate_admin', { p_password: password })
-    if (error) setError('Sistem error.')
-    else if (data === true) {
+    if (error) {
+      setError('Sistem error.')
+    } else if (data === true) {
       localStorage.setItem('admin_auth', 'true')
       setIsAuthenticated(true)
+    } else {
+      setError('Password salah!')
     }
-    else setError('Password salah!')
   }
 
   const handleAdminLogout = () => {
@@ -206,18 +222,30 @@ export default function AdminPage() {
     link.click();
   }
 
-  if (!isAuthenticated) return (
-    <div className="login-page-wrapper" style={{ background: '#060913' }}>
-      <div style={{ background: 'rgba(18, 26, 46, 0.7)', backdropFilter: 'blur(20px)', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.05)', width: '100%', maxWidth: '400px', textAlign: 'center', margin: 'auto' }}>
-        <h2 style={{ color: '#ff7a00', marginBottom: '2rem' }}>Akses Admin</h2>
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <input type="password" placeholder="Password..." value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '1rem', borderRadius: '12px', background: 'rgba(10, 14, 26, 0.8)', border: '1px solid #333', color: 'white' }} />
-          <button type="submit" style={{ padding: '1rem', background: '#ff7a00', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}>Masuk</button>
-          {error && <div style={{ color: '#ef4444' }}>{error}</div>}
-        </form>
+  // Tampilkan loading saat memeriksa status autentikasi awal
+  if (isCheckingAuth) {
+    return (
+      <div style={{ background: '#060913', minHeight: '100vh', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'Montserrat, sans-serif' }}>
+        Memuat...
       </div>
-    </div>
-  )
+    )
+  }
+
+  // GUARD CLAUSE: Jika belum login, paksa berhenti dan tampilkan form password
+  if (!isAuthenticated) {
+    return (
+      <div className="login-page-wrapper" style={{ background: '#060913', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'Montserrat, sans-serif' }}>
+        <div style={{ background: 'rgba(18, 26, 46, 0.7)', backdropFilter: 'blur(20px)', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.05)', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+          <h2 style={{ color: '#ff7a00', marginBottom: '2rem' }}>Akses Admin</h2>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <input type="password" placeholder="Password..." value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '1rem', borderRadius: '12px', background: 'rgba(10, 14, 26, 0.8)', border: '1px solid #333', color: 'white' }} />
+            <button type="submit" style={{ padding: '1rem', background: '#ff7a00', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Masuk</button>
+            {error && <div style={{ color: '#ef4444' }}>{error}</div>}
+          </form>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#09090b', padding: '3rem 2rem', color: '#f4f4f5', fontFamily: 'Montserrat, sans-serif' }}>
