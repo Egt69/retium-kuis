@@ -1,5 +1,5 @@
 import { createContext, useState, useContext } from 'react';
-import { dictionary } from './dictionary';
+import { dictionary } from './dictionary.js';
 
 const LanguageContext = createContext();
 
