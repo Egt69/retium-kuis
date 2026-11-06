@@ -9,6 +9,7 @@ export default function KuisPage() {
   const navigate = useNavigate()
   const username = localStorage.getItem('kuis_username')
   const code = localStorage.getItem('kuis_code')
+  const userRegion = localStorage.getItem('kuis_room') || 'GLB'
 
   const [questions, setQuestions] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -20,8 +21,7 @@ export default function KuisPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   const [startTime, setStartTime] = useState(null)
-  const [isWaiting, setIsWaiting] = useState(true)
-  const [countdown, setCountdown] = useState(0)
+  const [isWaiting, setIsWaiting] = useState(true) // True = Menunggu admin klik "Mulai Kuis"
 
   const [totalTimeLeft, setTotalTimeLeft] = useState(0)
   const [totalDuration, setTotalDuration] = useState(0)
@@ -32,34 +32,7 @@ export default function KuisPage() {
   const totalTimerRef = useRef(null)
   const nextTimeoutRef = useRef(null)
 
-  // 1. Cek Jadwal (Ruang Tunggu)
-  useEffect(() => {
-    const quizStartTime = localStorage.getItem('kuis_start_time')
-    
-    const checkTime = () => {
-      if (!quizStartTime) {
-        setIsWaiting(false) 
-        return
-      }
-
-      const now = new Date().getTime()
-      const start = new Date(quizStartTime).getTime()
-      const distance = start - now
-
-      if (distance <= 0) {
-        setIsWaiting(false) 
-      } else {
-        setIsWaiting(true)
-        setCountdown(Math.floor(distance / 1000))
-      }
-    }
-
-    checkTime()
-    const interval = setInterval(checkTime, 1000)
-    return () => clearInterval(interval)
-  }, [])
-
-  // 2. Pre-fetch Semua Soal Sekaligus (FILTER REGION)
+  // 1. Cek Status Room dari Database secara Real-time (Ruang Tunggu Manual)
   useEffect(() => {
     if (!username) {
       navigate('/')
@@ -69,11 +42,34 @@ export default function KuisPage() {
       navigate('/dashboard')
       return
     }
+
+    const checkQuizStatus = async () => {
+      const { data, error } = await supabase
+        .from('quiz_settings')
+        .select('is_active')
+        .eq('room_target', userRegion)
+        .maybeSingle()
+
+      if (!error && data) {
+        if (data.is_active === true) {
+          // Jika admin menekan tombol "Mulai Kuis", keluar dari ruang tunggu
+          setIsWaiting(false)
+        } else {
+          setIsWaiting(true)
+        }
+      }
+    }
+
+    checkQuizStatus()
+    const interval = setInterval(checkQuizStatus, 2000) // Cek status tiap 2 detik
+    return () => clearInterval(interval)
+  }, [navigate, username, code, userRegion])
+
+  // 2. Pre-fetch Semua Soal Sekaligus (FILTER REGION) setelah kuis dibuka admin
+  useEffect(() => {
     if (isWaiting) return 
 
     async function fetchQuestions() {
-      const userRegion = localStorage.getItem('kuis_room') || 'GLB'
-      
       const { data, error } = await supabase
         .from('questions')
         .select('*')
@@ -89,9 +85,9 @@ export default function KuisPage() {
       }
     }
     fetchQuestions()
-  }, [navigate, username, code, isWaiting])
+  }, [isWaiting, userRegion, navigate])
 
-  // 3. Setup Timer Total
+  // 3. Setup Timer Total Kuis
   useEffect(() => {
     if (isLoading || isWaiting || questions.length === 0) return
 
@@ -129,7 +125,7 @@ export default function KuisPage() {
     return () => clearInterval(totalTimerRef.current)
   }, [isLoading, isWaiting, questions])
 
-  // 4. Fetch Leaderboard Live (Dioptimalkan menjadi 6 detik agar ramah Free Tier)
+  // 4. Fetch Leaderboard Live (Dioptimalkan menjadi 6 detik)
   useEffect(() => {
     if (isLoading || isWaiting) return
 
@@ -158,7 +154,7 @@ export default function KuisPage() {
     }
 
     fetchLiveLeaderboard()
-    const intervalId = setInterval(fetchLiveLeaderboard, 6000) // Diubah ke 6 detik
+    const intervalId = setInterval(fetchLiveLeaderboard, 6000)
     return () => clearInterval(intervalId)
   }, [isLoading, isWaiting])
 
@@ -179,7 +175,7 @@ export default function KuisPage() {
     return () => clearInterval(timerRef.current)
   }, [currentIndex, isLoading, questions, isWaiting])
 
-  // 6. Waktu Habis (Per Soal) & Evaluasi Jawaban Terakhir
+  // 6. Waktu Habis (Per Soal) & Evaluasi Jawaban
   useEffect(() => {
     if (timeLeft === 0 && !isLoading && questions.length > 0 && !isWaiting) {
       const soalSekarang = questions[currentIndex]
@@ -239,7 +235,7 @@ export default function KuisPage() {
     })
   }
 
-  // 9. Lanjut Soal atau Simpan Hasil jika soal terakhir
+  // 9. Lanjut Soal atau Simpan Hasil
   const handleNext = async () => {
     setSelectedOption(null)
 
@@ -251,7 +247,7 @@ export default function KuisPage() {
     }
   }
 
-  // 10. Simpan Hasil Akhir (Sekali Saja di Akhir Kuis)
+  // 10. Simpan Hasil Akhir
   const simpanHasil = async (skorAkhir) => {
     setIsLoading(true)
     const jumlahBenar = answersLog.filter(a => a.status === 'benar').length
@@ -299,9 +295,6 @@ export default function KuisPage() {
         await supabase.from('access_codes').update({ used: true }).eq('code', code)
       }
 
-      const userRoom = localStorage.getItem('kuis_room') || 'GLB'
-      await supabase.from('quiz_settings').update({ is_active: false }).eq('room_target', userRoom)
-
       localStorage.removeItem('kuis_code') 
       localStorage.removeItem('kuis_start_time')
       localStorage.removeItem('kuis_total_start')
@@ -321,20 +314,21 @@ export default function KuisPage() {
     }
   }
 
-  // TAMPILAN RUANG TUNGGU
+  // TAMPILAN RUANG TUNGGU (Menunggu Admin Klik "Mulai Kuis")
   if (isWaiting) {
     return (
       <>
         <ParticleBackground />
         <div className="login-page-wrapper">
-          <div className="login-box" style={{ maxWidth: '400px', textAlign: 'center' }}>
+          <div className="login-box" style={{ maxWidth: '420px', textAlign: 'center' }}>
             <h2 className="text-orange" style={{ marginBottom: '1rem' }}>Ruang Tunggu</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Kuis akan segera dimulai secara serentak. Bersiap!</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
+              Anda berada di Room <strong style={{ color: 'white' }}>{userRegion}</strong>.<br />
+              Silakan bersiap! Kuis akan dimulai secara serentak segera setelah Admin menekan tombol <strong style={{ color: '#22c55e' }}>Mulai Kuis</strong>.
+            </p>
             
-            <div style={{ fontSize: '5rem', fontWeight: '800', color: 'white', textShadow: '0 0 30px var(--orange)' }}>
-              {countdown}
-            </div>
-            <p style={{ color: 'var(--text-muted)', marginTop: '1rem', letterSpacing: '2px' }}>DETIK LAGI</p>
+            <div className="spinner" style={{ margin: '0 auto 1.5rem auto' }}></div>
+            <p style={{ color: '#ff7a00', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '1px' }}>MENUNGGU ADMIN MEMULAI KUIS...</p>
                  
             <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.85rem', fontFamily: 'monospace' }}>
               <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '0.6rem 1rem', borderRadius: '8px', color: '#22c55e' }}>
