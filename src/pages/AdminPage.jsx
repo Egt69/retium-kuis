@@ -118,13 +118,13 @@ export default function AdminPage() {
       showModal('error', 'Gagal Membuka Kuis', error.message)
     } else { 
       setIsQuizActive(true)
-      showModal('success', 'Kuis Dibuka!', `Room ${selectedRoom} kini Aktif. Peserta dapat langsung mulai kuis.`)
+      showModal('success', 'Kuis Dibuka', `Room ${selectedRoom} kini Aktif. Peserta dapat langsung mulai kuis.`)
       loadRoomData() 
     }
   }
 
   const handleStopQuiz = async () => {
-    showModal('confirm', 'Tutup Kuis?', `Tutup akses kuis untuk room ${selectedRoom}?`, async () => {
+    showModal('confirm', 'Tutup Kuis', `Tutup akses kuis untuk room ${selectedRoom}?`, async () => {
       await supabase.from('quiz_settings').update({ is_active: false }).eq('room_target', selectedRoom)
       setIsQuizActive(false)
       loadRoomData()
@@ -134,13 +134,13 @@ export default function AdminPage() {
 
   const openConfirm = (type) => {
     if (type === 'live') {
-      showModal('confirm', 'Reset Live Monitor?', 'Hapus semua data skor sementara saat ini?', async () => {
+      showModal('confirm', 'Reset Live Monitor', 'Hapus semua data skor sementara saat ini?', async () => {
         await supabase.from('live_scores').delete().neq('id', '00000000-0000-0000-0000-000000000000')
         setLiveData([]); setFinishedData([])
         closeModal()
       })
     } else if (type === 'lb') {
-      showModal('confirm', 'Reset Leaderboard?', 'Peringatan! Semua riwayat skor & hasil kuis akan dihapus permanen.', async () => {
+      showModal('confirm', 'Reset Leaderboard', 'Peringatan! Semua riwayat skor & hasil kuis akan dihapus permanen.', async () => {
         const { error } = await supabase.from('results').delete().neq('id', '00000000-0000-0000-0000-000000000000')
         if (!error) setFinishedData([])
         closeModal()
@@ -149,7 +149,7 @@ export default function AdminPage() {
   }
 
   const handleResetCode = (code, username) => {
-    showModal('confirm', 'Reset Kode Akses?', `Izinkan "${username}" main lagi?`, async () => {
+    showModal('confirm', 'Reset Kode Akses', `Izinkan "${username}" main lagi?`, async () => {
       await supabase.from('access_codes').update({ used: false }).eq('code', code);
       loadRoomData();
       closeModal()
@@ -157,7 +157,7 @@ export default function AdminPage() {
   }
 
   const handleResetAllParticipants = () => {
-    showModal('confirm', 'HATI-HATI!', 'Hapus SEMUA data peserta?', async () => {
+    showModal('confirm', 'Peringatan Keras', 'Hapus SEMUA data peserta?', async () => {
       await supabase.from('access_codes').delete().neq('used_by', '---TIDAK-MUNGKIN-ADA---');
       setRegisteredList([]); setShowAllData(false);
       closeModal()
@@ -257,10 +257,10 @@ export default function AdminPage() {
             
             <div style={{ display: 'flex', gap: '0.8rem', marginBottom: '1.2rem' }}>
               <button onClick={handleStartQuiz} className="btn-action-base btn-start" style={{ flex: 1 }}>
-                <span>▶</span> Mulai Kuis
+                Mulai Kuis
               </button>
               <button onClick={handleStopQuiz} className="btn-action-base btn-stop" style={{ flex: 1 }}>
-                <span>⏹</span> Tutup Kuis
+                Tutup Kuis
               </button>
             </div>
 
@@ -388,7 +388,7 @@ export default function AdminPage() {
                         <td style={{ padding: '12px', color: '#94a3b8', fontFamily: 'monospace', fontSize: '0.85rem' }}>{r.wallet_address}</td>
                         <td style={{ padding: '12px', textAlign: 'center' }}><span style={{ background: r.used ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)', color: r.used ? '#f87171' : '#4ade80', padding: '4px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600' }}>{r.code}</span></td>
                         <td style={{ padding: '12px', textAlign: 'center' }}>
-                          <button onClick={() => { navigator.clipboard.writeText(r.wallet_address); showModal('success', 'Berhasil!', 'Alamat wallet berhasil di-copy.'); }} style={{ marginRight: '6px', padding: '5px 10px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}>Copy</button>
+                          <button onClick={() => { navigator.clipboard.writeText(r.wallet_address); showModal('success', 'Berhasil', 'Alamat wallet berhasil di-copy.'); }} style={{ marginRight: '6px', padding: '5px 10px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}>Copy</button>
                           {r.used && <button onClick={() => handleResetCode(r.code, r.used_by)} style={{ padding: '5px 10px', background: 'transparent', border: '1px solid #ff7a00', color: '#ff7a00', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600' }}>Reset</button>}
                         </td>
                       </tr>
@@ -420,3 +420,7 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+    </div>
+  )
+}
