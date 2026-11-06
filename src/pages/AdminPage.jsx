@@ -6,7 +6,6 @@ import '../styles/kuis.css'
 export default function AdminPage() {
   const navigate = useNavigate()
 
-  // Default state dimulai dari false agar aman dan wajib verifikasi
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   
@@ -15,9 +14,7 @@ export default function AdminPage() {
   
   const [liveData, setLiveData] = useState([])
   const [finishedData, setFinishedData] = useState([])
-  const [startTimeInput, setStartTimeInput] = useState('')
   const [isQuizActive, setIsQuizActive] = useState(false)
-  const [timeToStart, setTimeToStart] = useState('00:00:00')
   const [registeredList, setRegisteredList] = useState([])
   const [showAllData, setShowAllData] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -25,10 +22,9 @@ export default function AdminPage() {
   const [rooms, setRooms] = useState([])
   const [selectedRoom, setSelectedRoom] = useState('GLB')
 
-  // STATE UNTUK CUSTOM MODAL (Alert & Konfirmasi)
+  // STATE UNTUK CUSTOM MODAL
   const [modalConfirm, setModalConfirm] = useState({ show: false, type: '', title: '', message: '', action: null })
 
-  // Cek sesi login saat halaman pertama kali dimuat
   useEffect(() => {
     const checkAdminSession = async () => {
       const savedAuth = localStorage.getItem('admin_auth')
@@ -87,12 +83,8 @@ export default function AdminPage() {
     const { data: settings } = await supabase.from('quiz_settings').select('*').eq('room_target', selectedRoom).maybeSingle()
     if (settings) {
       setIsQuizActive(settings.is_active)
-      if (settings.start_time) {
-        setStartTimeInput(settings.start_time.slice(0, 16)) 
-      }
     } else {
       setIsQuizActive(false)
-      setStartTimeInput('')
     }
   }
 
@@ -106,43 +98,9 @@ export default function AdminPage() {
   useEffect(() => {
     if (!isAuthenticated) return
     loadRoomData()
-  }, [isAuthenticated, selectedRoom])
-
-  useEffect(() => {
-    if (!isAuthenticated) return 
-    
-    const interval = setInterval(async () => {
-      const { data: settings } = await supabase.from('quiz_settings').select('start_time, is_active').eq('room_target', selectedRoom).maybeSingle()
-      
-      if (settings && settings.is_active) {
-        const now = new Date().getTime()
-        const start = new Date(settings.start_time).getTime()
-        const distance = start - now
-
-        const { count } = await supabase.from('questions').select('*', { count: 'exact', head: true })
-        const totalSoal = count || 5
-        const durasiKuisMs = (totalSoal * 20) * 1000 
-        const timeElapsed = now - start
-
-        if (distance > 0) {
-          const h = Math.floor((distance % 86400000) / 3600000).toString().padStart(2, '0')
-          const m = Math.floor((distance % 3600000) / 60000).toString().padStart(2, '0')
-          const s = Math.floor((distance % 60000) / 1000).toString().padStart(2, '0')
-          setTimeToStart(`${h}:${m}:${s}`)
-        } else if (timeElapsed >= durasiKuisMs) {
-          setTimeToStart('CLOSED')
-          setIsQuizActive(false)
-          await supabase.from('quiz_settings').update({ is_active: false }).eq('room_target', selectedRoom)
-        } else {
-          setTimeToStart('KUIS DIMULAI')
-        }
-      } else {
-        setTimeToStart('DITUTUP')
-        setIsQuizActive(false)
-      }
-    }, 1000)
-
-    return () => clearInterval(interval)
+    // Polling status room aktif/tidak secara real-time untuk admin
+    const roomInterval = setInterval(loadRoomData, 3000)
+    return () => clearInterval(roomInterval)
   }, [isAuthenticated, selectedRoom])
 
   // --- FUNGSI MODAL HELPER ---
@@ -154,27 +112,27 @@ export default function AdminPage() {
     setModalConfirm({ show: false, type: '', title: '', message: '', action: null })
   }
 
-  // --- FUNGSI SET JADWAL ---
-  const handleSetSchedule = async () => {
-    if (!startTimeInput) return showModal('error', 'Peringatan', 'Pilih waktu terlebih dahulu!')
-    
-    // Hapus live scores lama
+  // --- TOMBOL MANUAL: START KUIS ---
+  const handleStartQuiz = async () => {
+    // Hapus live scores lama agar bersih saat mulai baru
     await supabase.from('live_scores').delete().neq('id', '00000000-0000-0000-0000-000000000000')
 
-    // Set jadwal baru
-    const { error } = await supabase.from('quiz_settings').update({ start_time: startTimeInput, is_active: true }).eq('room_target', selectedRoom)
+    const { error } = await supabase.from('quiz_settings').update({ is_active: true }).eq('room_target', selectedRoom)
     
     if (error) {
-      showModal('error', 'Gagal Mengatur', error.message)
+      showModal('error', 'Gagal Membuka Kuis', error.message)
     } else { 
-      showModal('success', 'Berhasil!', `Jadwal ${selectedRoom} diatur. Papan skor live sudah di-reset.`)
+      setIsQuizActive(true)
+      showModal('success', 'Kuis Dibuka!', `Room ${selectedRoom} kini Aktif. Peserta dapat langsung mulai kuis.`)
       loadRoomData() 
     }
   }
 
-  const handleStopQuiz = () => {
-    showModal('confirm', 'Tutup Pendaftaran?', `Tutup pendaftaran untuk room ${selectedRoom}?`, async () => {
+  // --- TOMBOL MANUAL: STOP KUIS ---
+  const handleStopQuiz = async () => {
+    showModal('confirm', 'Tutup Kuis?', `Tutup akses kuis untuk room ${selectedRoom}?`, async () => {
       await supabase.from('quiz_settings').update({ is_active: false }).eq('room_target', selectedRoom)
+      setIsQuizActive(false)
       loadRoomData()
       closeModal()
     })
@@ -222,7 +180,6 @@ export default function AdminPage() {
     link.click();
   }
 
-  // Tampilkan loading saat memeriksa status autentikasi awal
   if (isCheckingAuth) {
     return (
       <div style={{ background: '#060913', minHeight: '100vh', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'Montserrat, sans-serif' }}>
@@ -231,7 +188,6 @@ export default function AdminPage() {
     )
   }
 
-  // GUARD CLAUSE: Jika belum login, paksa berhenti dan tampilkan form password
   if (!isAuthenticated) {
     return (
       <div className="login-page-wrapper" style={{ background: '#060913', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'Montserrat, sans-serif' }}>
@@ -285,19 +241,34 @@ export default function AdminPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          
+          {/* KONTROL JADWAL / TOMBOL MANUAL START-STOP */}
           <div style={{ background: '#18181b', padding: '1.5rem', borderRadius: '16px', border: '1px solid #27272a' }}>
-            <h3 style={{ margin: '0 0 1rem 0' }}>Kontrol Jadwal</h3>
+            <h3 style={{ margin: '0 0 1rem 0' }}>Kontrol Status Kuis</h3>
             <select value={selectedRoom} onChange={(e) => setSelectedRoom(e.target.value)} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: '#09090b', color: 'white', border: '1px solid #333', marginBottom: '1rem' }}>
               {rooms.map(r => <option key={r.kode_negara} value={r.kode_negara}>{r.is_global ? 'Global' : `${r.nama_negara}`}</option>)}
             </select>
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              <input type="datetime-local" value={startTimeInput} onChange={(e) => setStartTimeInput(e.target.value)} style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', background: '#09090b', color: 'white', border: '1px solid #333' }} />
-              <button onClick={handleSetSchedule} style={{ padding: '0.8rem', background: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Set</button>
-              <button onClick={handleStopQuiz} style={{ padding: '0.8rem', background: 'transparent', border: '1px solid #333', color: 'white', borderRadius: '8px', cursor: 'pointer' }}>Stop</button>
+            
+            <div style={{ display: 'flex', gap: '0.8rem', marginBottom: '1rem' }}>
+              <button 
+                onClick={handleStartQuiz} 
+                style={{ flex: 1, padding: '0.9rem', background: '#22c55e', border: 'none', color: '#000', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}
+              >
+                ▶ MULAI KUIS
+              </button>
+              <button 
+                onClick={handleStopQuiz} 
+                style={{ flex: 1, padding: '0.9rem', background: '#ef4444', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}
+              >
+                ⏹ TUTUP KUIS
+              </button>
             </div>
+
             <div style={{ padding: '1rem', background: '#09090b', borderRadius: '8px', textAlign: 'center', border: '1px solid #27272a' }}>
-              <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: '#a1a1aa' }}>STATUS {selectedRoom}</p>
-              <h2 style={{ margin: 0, color: !isQuizActive ? '#a1a1aa' : 'white' }}>{!isQuizActive ? 'CLOSED' : timeToStart}</h2>
+              <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: '#a1a1aa' }}>STATUS ROOM {selectedRoom}</p>
+              <h2 style={{ margin: 0, color: isQuizActive ? '#22c55e' : '#ef4444', letterSpacing: '1px' }}>
+                {isQuizActive ? '🟢 KUIS DIBUKA (AKTIF)' : '🔴 KUIS DITUTUP (CLOSED)'}
+              </h2>
             </div>
           </div>
 
@@ -403,7 +374,6 @@ export default function AdminPage() {
 
       </div>
 
-      {/* CUSTOM MODAL GLOBAL */}
       {modalConfirm.show && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(5px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '1rem' }}>
           <div style={{ background: 'rgba(18, 26, 46, 0.95)', border: `1px solid ${modalConfirm.type === 'error' || modalConfirm.type === 'confirm' ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)'}`, boxShadow: `0 0 30px ${modalConfirm.type === 'error' || modalConfirm.type === 'confirm' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)'}`, padding: '2rem', borderRadius: '24px', maxWidth: '400px', width: '100%', textAlign: 'center', animation: 'modalFadeIn 0.3s ease-out' }}>
