@@ -406,7 +406,7 @@ export default function AdminPage() {
       {modalConfirm.show && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(5px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '1rem' }}>
           <div style={{ background: '#121622', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', padding: '2rem', borderRadius: '20px', maxWidth: '380px', width: '100%', textAlign: 'center', animation: 'modalFadeIn 0.25s ease-out' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{modalConfirm.type === 'error' ? '🚫' : modalConfirm.type === 'confirm' ? '⚠️' : '✨'}</div>
+            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{modalConfirm.type === 'error' ? '🚫' : modalConfirm.type === 'confirm' ? '⚠️' }</div>
             <h2 style={{ color: modalConfirm.type === 'error' || modalConfirm.type === 'confirm' ? '#f87171' : '#4ade80', margin: '0 0 0.8rem 0', fontSize: '1.1rem', fontWeight: '700' }}>{modalConfirm.title}</h2>
             <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '1.8rem' }}>{modalConfirm.message}</p>
             
