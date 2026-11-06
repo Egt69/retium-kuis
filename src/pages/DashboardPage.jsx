@@ -16,8 +16,8 @@ export default function DashboardPage() {
   const rawNegara = localStorage.getItem('kuis_negara')
   const userNegara = rawNegara ? rawNegara.trim() : 'GLB'
   
-  const [globalRoom, setGlobalRoom] = useState({ active: false, time: 'CLOSED' })
-  const [regionalRoom, setRegionalRoom] = useState({ active: false, time: 'CLOSED' })
+  const [globalActive, setGlobalActive] = useState(false)
+  const [regionalActive, setRegionalActive] = useState(false)
   const [namaNegara, setNamaNegara] = useState('Regional')
   
   const [hoverGlobal, setHoverGlobal] = useState(false)
@@ -37,66 +37,35 @@ export default function DashboardPage() {
     }
     if (userNegara) fetchNegara()
 
-    const checkSchedule = async () => {
-      const { count } = await supabase.from('questions').select('*', { count: 'exact', head: true })
-      const totalSoal = count || 5
-      const durasiKuisMs = (totalSoal * 20) * 1000
-
+    // Cek Status Tombol Manual dari Admin (is_active) secara real-time
+    const checkRoomStatus = async () => {
       // --- CEK ROOM GLOBAL ---
       const { data: globalData } = await supabase
         .from('quiz_settings')
-        .select('*')
+        .select('is_active')
         .eq('room_target', 'GLB')
         .maybeSingle()
 
       if (globalData) {
-        const now = new Date().getTime()
-        const start = new Date(globalData.start_time).getTime()
-        const distance = start - now
-        const timeElapsed = now - start
-
-        if (globalData.is_active && distance > 0) {
-          const h = Math.floor((distance % 86400000) / 3600000).toString().padStart(2, '0')
-          const m = Math.floor((distance % 3600000) / 60000).toString().padStart(2, '0')
-          const s = Math.floor((distance % 60000) / 1000).toString().padStart(2, '0')
-          setGlobalRoom({ active: true, time: `${h}:${m}:${s}` })
-        } else if (globalData.is_active && distance <= 0 && timeElapsed < durasiKuisMs) {
-          setGlobalRoom({ active: true, time: 'MULAI' })
-        } else {
-          setGlobalRoom({ active: false, time: 'CLOSED' })
-        }
+        setGlobalActive(globalData.is_active)
       }
 
       // --- CEK ROOM REGIONAL ---
       if (userNegara) {
         const { data: regData } = await supabase
           .from('quiz_settings')
-          .select('*')
+          .select('is_active')
           .eq('room_target', userNegara)
           .maybeSingle()
 
         if (regData) {
-          const now = new Date().getTime()
-          const start = new Date(regData.start_time).getTime()
-          const distance = start - now
-          const timeElapsed = now - start
-
-          if (regData.is_active && distance > 0) {
-            const h = Math.floor((distance % 86400000) / 3600000).toString().padStart(2, '0')
-            const m = Math.floor((distance % 3600000) / 60000).toString().padStart(2, '0')
-            const s = Math.floor((distance % 60000) / 1000).toString().padStart(2, '0')
-            setRegionalRoom({ active: true, time: `${h}:${m}:${s}` })
-          } else if (regData.is_active && distance <= 0 && timeElapsed < durasiKuisMs) {
-            setRegionalRoom({ active: true, time: 'MULAI' })
-          } else {
-            setRegionalRoom({ active: false, time: 'CLOSED' })
-          }
+          setRegionalActive(regData.is_active)
         }
       }
     }
 
-    checkSchedule()
-    const interval = setInterval(checkSchedule, 1000)
+    checkRoomStatus()
+    const interval = setInterval(checkRoomStatus, 2000) // Polling tiap 2 detik
     return () => clearInterval(interval)
   }, [navigate, username, userNegara])
 
@@ -105,7 +74,7 @@ export default function DashboardPage() {
     navigate('/')
   }
 
-  // --- FUNGSI MASUK ROOM (DIPERBAIKI) ---
+  // --- FUNGSI MASUK ROOM ---
   const handleMasukRoom = async (roomTarget) => {
     const cleanRoomTarget = roomTarget ? roomTarget.trim() : ''
 
@@ -134,7 +103,6 @@ export default function DashboardPage() {
       // Simpan room ke localStorage dan pindah halaman
       localStorage.setItem('kuis_room', cleanRoomTarget)
       
-      // Gunakan setTimeout agar React selesai memproses state sebelum pindah
       setTimeout(() => {
         navigate('/kuis')
       }, 100)
@@ -145,12 +113,9 @@ export default function DashboardPage() {
     }
   }
 
-  const renderStatusBadge = (room) => {
-    if (room.time === 'MULAI') {
-      return <span style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '1px', border: '1px solid rgba(34,197,94,0.3)' }}>{t('live')}</span>
-    }
-    if (room.active) {
-      return <span style={{ background: 'rgba(255, 122, 0, 0.15)', color: '#ff7a00', padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '1px', border: '1px solid rgba(255,122,0,0.3)' }}>{t('upcoming')}</span>
+  const renderStatusBadge = (isActive) => {
+    if (isActive) {
+      return <span style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '1px', border: '1px solid rgba(34,197,94,0.3)' }}>{t('live')} (AKTIF)</span>
     }
     return <span style={{ background: 'rgba(161, 161, 170, 0.1)', color: '#a1a1aa', padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '1px', border: '1px solid rgba(161,161,170,0.2)' }}>{t('closed')}</span>
   }
@@ -198,13 +163,17 @@ export default function DashboardPage() {
             <div onMouseEnter={() => setHoverGlobal(true)} onMouseLeave={() => setHoverGlobal(false)} style={{ background: 'rgba(18, 26, 46, 0.6)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(20px)', border: hoverGlobal ? '1px solid rgba(255, 122, 0, 0.4)' : '1px solid rgba(255,255,255,0.05)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'all 0.3s ease', boxShadow: hoverGlobal ? '0 0 20px rgba(255, 122, 0, 0.1)' : 'none', transform: hoverGlobal ? 'translateY(-2px)' : 'translateY(0)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3 style={{ color: 'white', margin: 0, fontSize: '1rem', letterSpacing: '1px', textAlign: 'left' }}>{t('room_global')}</h3>
-                {renderStatusBadge(globalRoom)}
+                {renderStatusBadge(globalActive)}
               </div>
               <div style={{ marginBottom: '2rem' }}>
-                {globalRoom.time === 'MULAI' ? ( <h2 style={{ color: '#22c55e', margin: 0, fontSize: '2.5rem', fontWeight: '800' }}>MULAI!</h2> ) : globalRoom.active ? ( <h2 style={{ color: '#ff7a00', margin: 0, fontSize: '2.5rem', fontWeight: '800', fontFamily: 'monospace' }}>{globalRoom.time}</h2> ) : ( <h2 style={{ color: '#3f3f46', margin: 0, fontSize: '2.5rem', fontWeight: '800' }}>--:--:--</h2> )}
+                {globalActive ? ( 
+                  <h2 style={{ color: '#22c55e', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>BUKA!</h2> 
+                ) : ( 
+                  <h2 style={{ color: '#3f3f46', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>CLOSED</h2> 
+                )}
               </div>
-              <button disabled={globalRoom.time !== 'MULAI'} onClick={() => handleMasukRoom('GLB')} style={{ width: '100%', padding: '1rem', background: globalRoom.time === 'MULAI' ? 'var(--orange)' : 'rgba(255,255,255,0.03)', color: globalRoom.time === 'MULAI' ? '#0a0e1a' : '#52525b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 'bold', cursor: globalRoom.time === 'MULAI' ? 'pointer' : 'not-allowed', transition: 'all 0.2s ease' }}>
-                {globalRoom.time === 'MULAI' ? `${t('enter_room')} GLOBAL` : t('not_started')}
+              <button disabled={!globalActive} onClick={() => handleMasukRoom('GLB')} style={{ width: '100%', padding: '1rem', background: globalActive ? 'var(--orange)' : 'rgba(255,255,255,0.03)', color: globalActive ? '#0a0e1a' : '#52525b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 'bold', cursor: globalActive ? 'pointer' : 'not-allowed', transition: 'all 0.2s ease' }}>
+                {globalActive ? `${t('enter_room')} GLOBAL` : t('not_started')}
               </button>
             </div>
 
@@ -212,13 +181,17 @@ export default function DashboardPage() {
             <div onMouseEnter={() => setHoverRegional(true)} onMouseLeave={() => setHoverRegional(false)} style={{ background: 'rgba(18, 26, 46, 0.6)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(20px)', border: hoverRegional ? '1px solid rgba(255, 122, 0, 0.4)' : '1px solid rgba(255,255,255,0.05)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'all 0.3s ease', boxShadow: hoverRegional ? '0 0 20px rgba(255, 122, 0, 0.1)' : 'none', transform: hoverRegional ? 'translateY(-2px)' : 'translateY(0)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3 style={{ color: 'white', margin: 0, fontSize: '1rem', letterSpacing: '1px', textAlign: 'left' }}>{t('room_regional')} {namaNegara}</h3>
-                {renderStatusBadge(regionalRoom)}
+                {renderStatusBadge(regionalActive)}
               </div>
               <div style={{ marginBottom: '2rem' }}>
-                {regionalRoom.time === 'MULAI' ? ( <h2 style={{ color: '#22c55e', margin: 0, fontSize: '2.5rem', fontWeight: '800' }}>MULAI!</h2> ) : regionalRoom.active ? ( <h2 style={{ color: '#ff7a00', margin: 0, fontSize: '2.5rem', fontWeight: '800', fontFamily: 'monospace' }}>{regionalRoom.time}</h2> ) : ( <h2 style={{ color: '#3f3f46', margin: 0, fontSize: '2.5rem', fontWeight: '800' }}>--:--:--</h2> )}
+                {regionalActive ? ( 
+                  <h2 style={{ color: '#22c55e', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>BUKA!</h2> 
+                ) : ( 
+                  <h2 style={{ color: '#3f3f46', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>CLOSED</h2> 
+                )}
               </div>
-              <button disabled={regionalRoom.time !== 'MULAI'} onClick={() => handleMasukRoom(userNegara)} style={{ width: '100%', padding: '1rem', background: regionalRoom.time === 'MULAI' ? 'var(--orange)' : 'rgba(255,255,255,0.03)', color: regionalRoom.time === 'MULAI' ? '#0a0e1a' : '#52525b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 'bold', cursor: regionalRoom.time === 'MULAI' ? 'pointer' : 'not-allowed', transition: 'all 0.2s ease' }}>
-                {regionalRoom.time === 'MULAI' ? `${t('enter_room')} ${namaNegara}` : t('not_started')}
+              <button disabled={!regionalActive} onClick={() => handleMasukRoom(userNegara)} style={{ width: '100%', padding: '1rem', background: regionalActive ? 'var(--orange)' : 'rgba(255,255,255,0.03)', color: regionalActive ? '#0a0e1a' : '#52525b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 'bold', cursor: regionalActive ? 'pointer' : 'not-allowed', transition: 'all 0.2s ease' }}>
+                {regionalActive ? `${t('enter_room')} ${namaNegara}` : t('not_started')}
               </button>
             </div>
 
