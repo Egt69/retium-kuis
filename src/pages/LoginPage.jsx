@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import ParticleBackground from '../components/ParticleBackground'
+import '../styles/kuis.css'
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('login')
@@ -156,18 +157,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ background: '#030508', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden', fontFamily: 'Montserrat, sans-serif', padding: '1rem' }}>
+    <div className="login-page-wrapper" style={{ position: 'relative', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', fontFamily: 'Montserrat, sans-serif' }}>
       <ParticleBackground />
-      
-      {/* Garis Cahaya Latar Belakang Menyerupai Referensi */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
-        <div style={{ position: 'absolute', top: '-20%', left: '-15%', width: '60vw', height: '140vh', background: 'linear-gradient(135deg, rgba(255, 122, 0, 0.18) 0%, transparent 65%)', transform: 'rotate(-25deg)', filter: 'blur(70px)' }}></div>
-        <div style={{ position: 'absolute', bottom: '-20%', right: '-15%', width: '60vw', height: '140vh', background: 'linear-gradient(135deg, transparent 35%, rgba(255, 122, 0, 0.12) 100%)', transform: 'rotate(-25deg)', filter: 'blur(70px)' }}></div>
-      </div>
 
-      {/* KARTU UTAMA DENGAN GRADASI ELEGAN DI ATAS (MENIRU GAYA CONTOH) */}
+      {/* KARTU UTAMA DENGAN GRADASI ELEGAN DI ATAS */}
       <div style={{
-        background: 'linear-gradient(180deg, rgba(28, 20, 14, 0.95) 0%, rgba(8, 11, 18, 0.95) 35%, rgba(5, 7, 12, 0.95) 100%)',
+        background: 'linear-gradient(180deg, rgba(28, 20, 14, 0.92) 0%, rgba(8, 11, 18, 0.92) 35%, rgba(5, 7, 12, 0.92) 100%)',
         backdropFilter: 'blur(30px)',
         WebkitBackdropFilter: 'blur(30px)',
         border: '1px solid rgba(255, 122, 0, 0.35)',
@@ -187,7 +182,7 @@ export default function LoginPage() {
           <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.5rem' }}>Silakan masuk atau daftar untuk melanjutkan</p>
         </div>
 
-        {/* Tab Switcher ala Contoh */}
+        {/* Tab Switcher */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '2rem', background: 'rgba(0, 0, 0, 0.5)', padding: '5px', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
           <button 
             onClick={() => { setActiveTab('login'); setError(''); }} 
@@ -369,7 +364,7 @@ export default function LoginPage() {
                 setRecoveryPopup(null); 
                 navigate('/konfirmasi', { state: { username: username } }); 
               }} 
-              style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#030508', border: 'none', borderRadius: '14px', padding: '1rem', fontWeight: '800', width: '100%', cursor: 'pointer' }}
+              style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#030508', border: 'none', borderRadius: '12px', padding: '1rem', fontWeight: '800', width: '100%', cursor: 'pointer' }}
             >
               Saya Sudah Mencatat, Lanjut
             </button>
