@@ -1372,3 +1372,21 @@ body {
   background: #facc15 !important;
   color: #000 !important;
 }
+
+/* --- TAMBAHAN TRANSISI HALUS (FADE-IN) --- */
+@keyframes fadeInSmooth {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kuis-layout-wrapper,
+.login-page-wrapper,
+.question-card-premium {
+  animation: fadeInSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
