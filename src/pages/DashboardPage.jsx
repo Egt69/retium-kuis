@@ -19,6 +19,9 @@ export default function DashboardPage() {
   const [globalActive, setGlobalActive] = useState(false)
   const [regionalActive, setRegionalActive] = useState(false)
   const [namaNegara, setNamaNegara] = useState('Regional')
+
+  const [hasCompletedGlobal, setHasCompletedGlobal] = useState(false)
+  const [hasCompletedRegional, setHasCompletedRegional] = useState(false)
   
   const [hoverGlobal, setHoverGlobal] = useState(false)
   const [hoverRegional, setHoverRegional] = useState(false)
@@ -37,9 +40,19 @@ export default function DashboardPage() {
     }
     if (userNegara) fetchNegara()
 
-    // Cek Status Tombol Manual dari Admin (is_active) secara real-time
+    // Cek Status Tombol Manual dari Admin (is_active) dan Status Keras Selesai Peserta secara real-time
     const checkRoomStatus = async () => {
-      // --- CEK ROOM GLOBAL ---
+      // 1. Cek apakah user sudah pernah menyelesaikan kuis di tabel results
+      const { data: resultsData } = await supabase
+        .from('results')
+        .select('username')
+        .eq('username', username)
+
+      const sudahSelesai = resultsData && resultsData.length > 0
+      setHasCompletedGlobal(sudahSelesai)
+      setHasCompletedRegional(sudahSelesai)
+
+      // 2. --- CEK ROOM GLOBAL ---
       const { data: globalData } = await supabase
         .from('quiz_settings')
         .select('is_active')
@@ -50,7 +63,7 @@ export default function DashboardPage() {
         setGlobalActive(globalData.is_active)
       }
 
-      // --- CEK ROOM REGIONAL ---
+      // 3. --- CEK ROOM REGIONAL ---
       if (userNegara) {
         const { data: regData } = await supabase
           .from('quiz_settings')
@@ -115,7 +128,7 @@ export default function DashboardPage() {
 
   const renderStatusBadge = (isActive) => {
     if (isActive) {
-      return <span style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '1px', border: '1px solid rgba(34,197,94,0.3)' }}>{t('live')} (AKTIF)</span>
+      return <span style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '1px', border: '1px solid rgba(34,197,94,0.3)' }}>AKTIF</span>
     }
     return <span style={{ background: 'rgba(161, 161, 170, 0.1)', color: '#a1a1aa', padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '1px', border: '1px solid rgba(161,161,170,0.2)' }}>{t('closed')}</span>
   }
@@ -138,7 +151,7 @@ export default function DashboardPage() {
           onClick={toggleLanguage} 
           style={{ position: 'absolute', top: '2rem', right: '2rem', zIndex: 50, background: 'rgba(255, 122, 0, 0.1)', border: '1px solid #ff7a00', color: '#ff7a00', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(10px)' }}
         >
-          {lang === 'id' ? 'EN 🌐' : 'ID 🌐'}
+          {lang === 'id' ? 'EN' : 'ID'}
         </button>
 
         <div style={{ position: 'absolute', top: '2rem', left: '2rem', zIndex: 20 }}>
@@ -166,14 +179,31 @@ export default function DashboardPage() {
                 {renderStatusBadge(globalActive)}
               </div>
               <div style={{ marginBottom: '2rem' }}>
-                {globalActive ? ( 
-                  <h2 style={{ color: '#22c55e', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>BUKA!</h2> 
+                {hasCompletedGlobal ? (
+                  <h2 style={{ color: '#71717a', margin: 0, fontSize: '1.3rem', fontWeight: '700' }}>SELESAI</h2>
+                ) : globalActive ? ( 
+                  <h2 style={{ color: '#4ade80', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>BUKA</h2> 
                 ) : ( 
                   <h2 style={{ color: '#3f3f46', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>CLOSED</h2> 
                 )}
               </div>
-              <button disabled={!globalActive} onClick={() => handleMasukRoom('GLB')} style={{ width: '100%', padding: '1rem', background: globalActive ? 'var(--orange)' : 'rgba(255,255,255,0.03)', color: globalActive ? '#0a0e1a' : '#52525b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 'bold', cursor: globalActive ? 'pointer' : 'not-allowed', transition: 'all 0.2s ease' }}>
-                {globalActive ? `${t('enter_room')} GLOBAL` : t('not_started')}
+              <button 
+                disabled={!globalActive || hasCompletedGlobal} 
+                onClick={() => handleMasukRoom('GLB')} 
+                style={{ 
+                  width: '100%', 
+                  padding: '1rem', 
+                  background: hasCompletedGlobal ? 'rgba(113, 113, 122, 0.1)' : globalActive ? 'var(--orange)' : 'rgba(255,255,255,0.03)', 
+                  color: hasCompletedGlobal ? '#71717a' : globalActive ? '#0a0e1a' : '#52525b', 
+                  border: hasCompletedGlobal ? '1px solid rgba(113, 113, 122, 0.2)' : '1px solid rgba(255,255,255,0.05)', 
+                  borderRadius: '12px', 
+                  fontWeight: 'bold', 
+                  cursor: (!globalActive || hasCompletedGlobal) ? 'not-allowed' : 'pointer', 
+                  transition: 'all 0.2s ease',
+                  fontSize: '0.8rem'
+                }}
+              >
+                {hasCompletedGlobal ? 'ANDA TELAH MENYELESAIKAN KUIS SESI INI' : globalActive ? `${t('enter_room')} GLOBAL` : t('not_started')}
               </button>
             </div>
 
@@ -184,14 +214,31 @@ export default function DashboardPage() {
                 {renderStatusBadge(regionalActive)}
               </div>
               <div style={{ marginBottom: '2rem' }}>
-                {regionalActive ? ( 
-                  <h2 style={{ color: '#22c55e', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>BUKA!</h2> 
+                {hasCompletedRegional ? (
+                  <h2 style={{ color: '#71717a', margin: 0, fontSize: '1.3rem', fontWeight: '700' }}>SELESAI</h2>
+                ) : regionalActive ? ( 
+                  <h2 style={{ color: '#4ade80', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>BUKA</h2> 
                 ) : ( 
                   <h2 style={{ color: '#3f3f46', margin: 0, fontSize: '2.2rem', fontWeight: '800' }}>CLOSED</h2> 
                 )}
               </div>
-              <button disabled={!regionalActive} onClick={() => handleMasukRoom(userNegara)} style={{ width: '100%', padding: '1rem', background: regionalActive ? 'var(--orange)' : 'rgba(255,255,255,0.03)', color: regionalActive ? '#0a0e1a' : '#52525b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 'bold', cursor: regionalActive ? 'pointer' : 'not-allowed', transition: 'all 0.2s ease' }}>
-                {regionalActive ? `${t('enter_room')} ${namaNegara}` : t('not_started')}
+              <button 
+                disabled={!regionalActive || hasCompletedRegional} 
+                onClick={() => handleMasukRoom(userNegara)} 
+                style={{ 
+                  width: '100%', 
+                  padding: '1rem', 
+                  background: hasCompletedRegional ? 'rgba(113, 113, 122, 0.1)' : regionalActive ? 'var(--orange)' : 'rgba(255,255,255,0.03)', 
+                  color: hasCompletedRegional ? '#71717a' : regionalActive ? '#0a0e1a' : '#52525b', 
+                  border: hasCompletedRegional ? '1px solid rgba(113, 113, 122, 0.2)' : '1px solid rgba(255,255,255,0.05)', 
+                  borderRadius: '12px', 
+                  fontWeight: 'bold', 
+                  cursor: (!regionalActive || hasCompletedRegional) ? 'not-allowed' : 'pointer', 
+                  transition: 'all 0.2s ease',
+                  fontSize: '0.8rem'
+                }}
+              >
+                {hasCompletedRegional ? 'ANDA TELAH MENYELESAIKAN KUIS SESI INI' : regionalActive ? `${t('enter_room')} ${namaNegara}` : t('not_started')}
               </button>
             </div>
 
@@ -219,10 +266,9 @@ export default function DashboardPage() {
       {errorMsg && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(5px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '1rem' }}>
           <div style={{ background: 'rgba(18, 26, 46, 0.95)', border: '1px solid rgba(239, 68, 68, 0.5)', boxShadow: '0 0 30px rgba(239, 68, 68, 0.2)', padding: '2rem', borderRadius: '24px', maxWidth: '400px', width: '100%', textAlign: 'center', animation: 'modalFadeIn 0.3s ease-out' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚫</div>
-            <h2 style={{ color: '#ef4444', margin: '0 0 1rem 0', fontSize: '1.2rem' }}>Akses Ditolak</h2>
+            <h2 style={{ color: '#f87171', margin: '0 0 1rem 0', fontSize: '1.2rem' }}>Akses Ditolak</h2>
             <p style={{ color: '#a1a1aa', fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '2rem' }}>{errorMsg}</p>
-            <button onClick={() => setErrorMsg('')} style={{ width: '100%', padding: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseEnter={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.2)'} onMouseLeave={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.1)'}>
+            <button onClick={() => setErrorMsg('')} style={{ width: '100%', padding: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#f87171', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
               {t('understand')}
             </button>
           </div>
