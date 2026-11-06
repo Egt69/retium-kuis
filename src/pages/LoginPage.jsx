@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import ParticleBackground from '../components/ParticleBackground'
-import '../styles/kuis.css'
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('login')
@@ -27,7 +26,6 @@ export default function LoginPage() {
   
   const navigate = useNavigate()
 
-  // AMBIL DATA NEGARA (FIX DARI useState JADI useEffect)
   useEffect(() => {
     const fetchCountries = async () => {
       const { data } = await supabase.from('rooms').select('*').eq('is_global', false)
@@ -46,7 +44,6 @@ export default function LoginPage() {
     return address.startsWith('rete') && address.length >= 30
   }
 
-  // Fungsi Daftar
   const handleRegister = async (e) => {
     e.preventDefault()
     setError('')
@@ -60,7 +57,6 @@ export default function LoginPage() {
 
     setLoading(true)
 
-    // FIX: TAMBAHKAN p_negara
     const { data, error } = await supabase.rpc('register_participant', { 
       p_username: username, 
       p_password: password,
@@ -81,7 +77,6 @@ export default function LoginPage() {
     setLoading(false)
   }
 
-  // Fungsi Login
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
@@ -120,7 +115,6 @@ export default function LoginPage() {
     }
   }
 
-  // Fungsi Reset Password (Lupa Password)
   const handleResetPassword = async (e) => {
     e.preventDefault()
     setError('')
@@ -162,72 +156,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-page-wrapper" style={{ background: '#05070c', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ background: '#05070c', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden', fontFamily: 'Montserrat, sans-serif', padding: '1rem' }}>
       <ParticleBackground />
       
-      <style>{`
-        .retium-glass-card {
-          background: rgba(12, 16, 28, 0.75);
-          backdrop-filter: blur(25px);
-          -webkit-backdrop-filter: blur(25px);
-          border: 1px solid rgba(255, 122, 0, 0.25);
-          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 122, 0, 0.1);
-          border-radius: 28px;
-          width: 100%;
-          max-width: 440px;
-          padding: 2.5rem;
-          position: relative;
-          z-index: 10;
-        }
-        .retium-input-field {
-          background: rgba(8, 12, 20, 0.85);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 14px;
-          color: white;
-          padding: 1rem 1.2rem;
-          width: 100%;
-          font-size: 0.95rem;
-          outline: none;
-          transition: all 0.3s ease;
-        }
-        .retium-input-field:focus {
-          border-color: #ff7a00;
-          box-shadow: 0 0 15px rgba(255, 122, 0, 0.25);
-        }
-        .retium-btn-main {
-          background: linear-gradient(135deg, #ff7a00 0%, #e56d00 100%);
-          color: #05070c;
-          border: none;
-          border-radius: 14px;
-          padding: 1rem;
-          font-weight: 800;
-          width: 100%;
-          cursor: pointer;
-          letter-spacing: 1px;
-          box-shadow: 0 10px 25px rgba(255, 122, 0, 0.3);
-          transition: all 0.3s ease;
-        }
-        .retium-btn-main:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 15px 30px rgba(255, 122, 0, 0.45);
-        }
-        .retium-tab-btn {
-          flex: 1;
-          padding: 0.85rem;
-          border-radius: 12px;
-          border: none;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-size: 0.9rem;
-        }
-      `}</style>
-
-      <div className="retium-glass-card">
+      <div style={{
+        background: 'rgba(12, 16, 28, 0.85)',
+        backdropFilter: 'blur(25px)',
+        WebkitBackdropFilter: 'blur(25px)',
+        border: '1px solid rgba(255, 122, 0, 0.3)',
+        boxShadow: '0 30px 60px rgba(0, 0, 0, 0.9), 0 0 50px rgba(255, 122, 0, 0.12)',
+        borderRadius: '28px',
+        width: '100%',
+        maxWidth: '440px',
+        padding: '2.5rem',
+        position: 'relative',
+        zIndex: 10
+      }}>
         
-        <div className="login-header" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 className="login-title" style={{ margin: 0, fontSize: '1.8rem', letterSpacing: '1px' }}>
-            <span className="title-retium" style={{ color: '#ff7a00', fontWeight: '900' }}>RETIUM</span> <span className="title-kuis" style={{ color: 'white', fontWeight: '400' }}>QUIZ</span>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <h1 style={{ margin: 0, fontSize: '1.8rem', letterSpacing: '1px' }}>
+            <span style={{ color: '#ff7a00', fontWeight: '900' }}>RETIUM</span> <span style={{ color: 'white', fontWeight: '400' }}>QUIZ</span>
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.4rem' }}>Silakan masuk atau daftar untuk melanjutkan</p>
         </div>
@@ -235,8 +183,15 @@ export default function LoginPage() {
         <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem', background: 'rgba(0,0,0,0.4)', padding: '5px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.04)' }}>
           <button 
             onClick={() => { setActiveTab('login'); setError(''); }} 
-            className="retium-tab-btn"
             style={{ 
+              flex: 1,
+              padding: '0.85rem',
+              borderRadius: '12px',
+              border: 'none',
+              fontWeight: '700',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontSize: '0.9rem',
               background: activeTab === 'login' ? '#ff7a00' : 'transparent', 
               color: activeTab === 'login' ? '#05070c' : '#94a3b8',
               boxShadow: activeTab === 'login' ? '0 5px 15px rgba(255, 122, 0, 0.3)' : 'none'
@@ -246,8 +201,15 @@ export default function LoginPage() {
           </button>
           <button 
             onClick={() => { setActiveTab('register'); setError(''); }} 
-            className="retium-tab-btn"
             style={{ 
+              flex: 1,
+              padding: '0.85rem',
+              borderRadius: '12px',
+              border: 'none',
+              fontWeight: '700',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontSize: '0.9rem',
               background: activeTab === 'register' ? '#ff7a00' : 'transparent', 
               color: activeTab === 'register' ? '#05070c' : '#94a3b8',
               boxShadow: activeTab === 'register' ? '0 5px 15px rgba(255, 122, 0, 0.3)' : 'none'
@@ -261,12 +223,12 @@ export default function LoginPage() {
         {activeTab === 'login' && (
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             <div>
-              <input type="text" placeholder="Username Discord" value={username} onChange={(e) => setUsername(e.target.value)} required disabled={loading} className="retium-input-field" />
+              <input type="text" placeholder="Username Discord" value={username} onChange={(e) => setUsername(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
             </div>
             <div>
-              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} className="retium-input-field" />
+              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
             </div>
-            <button type="submit" className="retium-btn-main" disabled={loading}>
+            <button type="submit" disabled={loading} style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#05070c', border: 'none', borderRadius: '14px', padding: '1rem', fontWeight: '800', width: '100%', cursor: 'pointer', letterSpacing: '1px', boxShadow: '0 10px 25px rgba(255, 122, 0, 0.3)' }}>
               {loading ? 'MEMPROSES...' : 'MASUK KUIS'}
             </button>
 
@@ -288,27 +250,25 @@ export default function LoginPage() {
         {activeTab === 'register' && (
           <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
             <div>
-              <input type="text" placeholder="Username Discord (Tanpa spasi)" value={username} onChange={handleUsernameChange} required disabled={loading} className="retium-input-field" />
+              <input type="text" placeholder="Username Discord (Tanpa spasi)" value={username} onChange={handleUsernameChange} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
             </div>
             <div>
-              <input type="password" placeholder="Buat Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} className="retium-input-field" />
+              <input type="password" placeholder="Buat Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
             </div>
             <div>
-              <input type="password" placeholder="Konfirmasi Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={loading} className="retium-input-field" />
+              <input type="password" placeholder="Konfirmasi Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
             </div>
             <div>
-              <input type="text" placeholder="Wallet Address (rete...)" value={wallet} onChange={(e) => setWallet(e.target.value)} required disabled={loading} className="retium-input-field" />
+              <input type="text" placeholder="Wallet Address (rete...)" value={wallet} onChange={(e) => setWallet(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
             </div>
             
-            {/* DROPDOWN NEGARA */}
             <div>
               <select 
                 value={selectedCountry} 
                 onChange={(e) => setSelectedCountry(e.target.value)} 
                 required 
                 disabled={loading}
-                className="retium-input-field"
-                style={{ cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }}
+                style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', cursor: 'pointer' }}
               >
                 <option value="" disabled style={{ color: '#05070c', background: '#121826' }}>Pilih Negara Kamu</option>
                 {countries.map((c) => (
@@ -324,7 +284,7 @@ export default function LoginPage() {
               Hanya masukkan Alamat Wallet (Address). JANGAN pernah memberikan PIN, Sandi, Kode, atau Seed Phrase (Private Key) Anda ke website ini!
             </div>
 
-            <button type="submit" className="retium-btn-main" disabled={loading}>
+            <button type="submit" disabled={loading} style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#05070c', border: 'none', borderRadius: '14px', padding: '1rem', fontWeight: '800', width: '100%', cursor: 'pointer', letterSpacing: '1px', boxShadow: '0 10px 25px rgba(255, 122, 0, 0.3)' }}>
               {loading ? 'MENDAFTAR...' : 'DAFTAR & DAPATKAN KODE'}
             </button>
             {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '0.8rem', borderRadius: '10px', fontSize: '0.85rem', textAlign: 'center' }}>{error}</div>}
@@ -336,26 +296,26 @@ export default function LoginPage() {
       {/* MODAL LUPA PASSWORD */}
       {showForgot && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(5, 7, 12, 0.85)', backdropFilter: 'blur(15px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
-          <div className="retium-glass-card" style={{ maxWidth: '420px', textAlign: 'center' }}>
+          <div style={{ background: 'rgba(12, 16, 28, 0.95)', border: '1px solid rgba(255, 122, 0, 0.3)', borderRadius: '28px', padding: '2.5rem', maxWidth: '420px', width: '100%', textAlign: 'center', boxShadow: '0 30px 60px rgba(0,0,0,0.9)' }}>
             <h2 style={{ color: 'white', margin: '0 0 0.5rem 0', fontSize: '1.4rem' }}>Reset Password</h2>
             <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Masukkan Username, Kode Recovery (RTM-ID...), dan Password Baru.</p>
 
             <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <input type="text" placeholder="Username Discord" value={resetUsername} onChange={(e) => setResetUsername(e.target.value)} required disabled={loading} className="retium-input-field" />
+                <input type="text" placeholder="Username Discord" value={resetUsername} onChange={(e) => setResetUsername(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
               </div>
               <div>
-                <input type="text" placeholder="Kode Recovery (RTM-ID...)" value={resetRecovery} onChange={(e) => setResetRecovery(e.target.value)} required disabled={loading} className="retium-input-field" style={{ textTransform: 'uppercase' }} />
+                <input type="text" placeholder="Kode Recovery (RTM-ID...)" value={resetRecovery} onChange={(e) => setResetRecovery(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', textTransform: 'uppercase' }} />
               </div>
               <div>
-                <input type="password" placeholder="Password Baru" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required disabled={loading} className="retium-input-field" />
+                <input type="password" placeholder="Password Baru" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
               </div>
 
               {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>{error}</div>}
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
                 <button type="button" onClick={() => setShowForgot(false)} style={{ flex: 1, padding: '0.9rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Batal</button>
-                <button type="submit" disabled={loading} className="retium-btn-main" style={{ flex: 1, padding: '0.9rem' }}>{loading ? 'Memproses...' : 'Reset Password'}</button>
+                <button type="submit" disabled={loading} style={{ flex: 1, padding: '0.9rem', background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', border: 'none', color: '#05070c', borderRadius: '12px', fontWeight: '800', cursor: 'pointer' }}>{loading ? 'Memproses...' : 'Reset Password'}</button>
               </div>
             </form>
           </div>
@@ -365,7 +325,7 @@ export default function LoginPage() {
       {/* POP-UP KODE KONFIRMASI */}
       {recoveryPopup && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(5, 7, 12, 0.85)', backdropFilter: 'blur(15px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
-          <div className="retium-glass-card" style={{ maxWidth: '450px', textAlign: 'center' }}>
+          <div style={{ background: 'rgba(12, 16, 28, 0.95)', border: '1px solid rgba(255, 122, 0, 0.3)', borderRadius: '28px', padding: '2.5rem', maxWidth: '450px', width: '100%', textAlign: 'center', boxShadow: '0 30px 60px rgba(0,0,0,0.9)' }}>
             <h2 style={{ color: 'white', margin: '0 0 0.5rem 0', fontSize: '1.4rem' }}>Pendaftaran Sukses</h2>
             <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Simpan kode ini. Kamu akan membutuhkannya untuk verifikasi.</p>
 
@@ -401,7 +361,7 @@ export default function LoginPage() {
                 setRecoveryPopup(null); 
                 navigate('/konfirmasi', { state: { username: username } }); 
               }} 
-              className="retium-btn-main"
+              style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#05070c', border: 'none', borderRadius: '12px', padding: '1rem', fontWeight: '800', width: '100%', cursor: 'pointer' }}
             >
               Saya Sudah Mencatat, Lanjut
             </button>
