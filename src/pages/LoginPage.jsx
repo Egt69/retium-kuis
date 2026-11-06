@@ -156,31 +156,39 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ background: '#05070c', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden', fontFamily: 'Montserrat, sans-serif', padding: '1rem' }}>
+    <div style={{ background: '#030508', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden', fontFamily: 'Montserrat, sans-serif', padding: '1rem' }}>
       <ParticleBackground />
       
+      {/* Garis Cahaya Latar Belakang Menyerupai Referensi */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
+        <div style={{ position: 'absolute', top: '-20%', left: '-15%', width: '60vw', height: '140vh', background: 'linear-gradient(135deg, rgba(255, 122, 0, 0.18) 0%, transparent 65%)', transform: 'rotate(-25deg)', filter: 'blur(70px)' }}></div>
+        <div style={{ position: 'absolute', bottom: '-20%', right: '-15%', width: '60vw', height: '140vh', background: 'linear-gradient(135deg, transparent 35%, rgba(255, 122, 0, 0.12) 100%)', transform: 'rotate(-25deg)', filter: 'blur(70px)' }}></div>
+      </div>
+
+      {/* KARTU UTAMA DENGAN GRADASI ELEGAN DI ATAS (MENIRU GAYA CONTOH) */}
       <div style={{
-        background: 'rgba(12, 16, 28, 0.85)',
-        backdropFilter: 'blur(25px)',
-        WebkitBackdropFilter: 'blur(25px)',
-        border: '1px solid rgba(255, 122, 0, 0.3)',
-        boxShadow: '0 30px 60px rgba(0, 0, 0, 0.9), 0 0 50px rgba(255, 122, 0, 0.12)',
-        borderRadius: '28px',
+        background: 'linear-gradient(180deg, rgba(28, 20, 14, 0.95) 0%, rgba(8, 11, 18, 0.95) 35%, rgba(5, 7, 12, 0.95) 100%)',
+        backdropFilter: 'blur(30px)',
+        WebkitBackdropFilter: 'blur(30px)',
+        border: '1px solid rgba(255, 122, 0, 0.35)',
+        boxShadow: '0 35px 70px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 122, 0, 0.4), 0 0 50px rgba(255, 122, 0, 0.1)',
+        borderRadius: '32px',
         width: '100%',
         maxWidth: '440px',
-        padding: '2.5rem',
+        padding: '2.8rem 2.2rem',
         position: 'relative',
         zIndex: 10
       }}>
         
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ margin: 0, fontSize: '1.8rem', letterSpacing: '1px' }}>
-            <span style={{ color: '#ff7a00', fontWeight: '900' }}>RETIUM</span> <span style={{ color: 'white', fontWeight: '400' }}>QUIZ</span>
+        <div style={{ textAlign: 'center', marginBottom: '2.2rem' }}>
+          <h1 style={{ margin: 0, fontSize: '1.9rem', letterSpacing: '1px' }}>
+            <span style={{ color: '#ff7a00', fontWeight: '900', textShadow: '0 0 20px rgba(255,122,0,0.4)' }}>RETIUM</span> <span style={{ color: 'white', fontWeight: '400' }}>QUIZ</span>
           </h1>
-          <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.4rem' }}>Silakan masuk atau daftar untuk melanjutkan</p>
+          <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.5rem' }}>Silakan masuk atau daftar untuk melanjutkan</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem', background: 'rgba(0,0,0,0.4)', padding: '5px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.04)' }}>
+        {/* Tab Switcher ala Contoh */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '2rem', background: 'rgba(0, 0, 0, 0.5)', padding: '5px', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
           <button 
             onClick={() => { setActiveTab('login'); setError(''); }} 
             style={{ 
@@ -192,9 +200,9 @@ export default function LoginPage() {
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               fontSize: '0.9rem',
-              background: activeTab === 'login' ? '#ff7a00' : 'transparent', 
-              color: activeTab === 'login' ? '#05070c' : '#94a3b8',
-              boxShadow: activeTab === 'login' ? '0 5px 15px rgba(255, 122, 0, 0.3)' : 'none'
+              background: activeTab === 'login' ? 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)' : 'transparent', 
+              color: activeTab === 'login' ? '#030508' : '#94a3b8',
+              boxShadow: activeTab === 'login' ? '0 5px 15px rgba(255, 122, 0, 0.35)' : 'none'
             }}
           >
             Login
@@ -210,9 +218,9 @@ export default function LoginPage() {
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               fontSize: '0.9rem',
-              background: activeTab === 'register' ? '#ff7a00' : 'transparent', 
-              color: activeTab === 'register' ? '#05070c' : '#94a3b8',
-              boxShadow: activeTab === 'register' ? '0 5px 15px rgba(255, 122, 0, 0.3)' : 'none'
+              background: activeTab === 'register' ? 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)' : 'transparent', 
+              color: activeTab === 'register' ? '#030508' : '#94a3b8',
+              boxShadow: activeTab === 'register' ? '0 5px 15px rgba(255, 122, 0, 0.35)' : 'none'
             }}
           >
             Daftar Baru
@@ -223,12 +231,12 @@ export default function LoginPage() {
         {activeTab === 'login' && (
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             <div>
-              <input type="text" placeholder="Username Discord" value={username} onChange={(e) => setUsername(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
+              <input type="text" placeholder="Username Discord" value={username} onChange={(e) => setUsername(e.target.value)} required disabled={loading} style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)' }} />
             </div>
             <div>
-              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
+              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)' }} />
             </div>
-            <button type="submit" disabled={loading} style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#05070c', border: 'none', borderRadius: '14px', padding: '1rem', fontWeight: '800', width: '100%', cursor: 'pointer', letterSpacing: '1px', boxShadow: '0 10px 25px rgba(255, 122, 0, 0.3)' }}>
+            <button type="submit" disabled={loading} style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#030508', border: 'none', borderRadius: '16px', padding: '1.1rem', fontWeight: '800', width: '100%', cursor: 'pointer', letterSpacing: '1px', boxShadow: '0 10px 25px rgba(255, 122, 0, 0.35)' }}>
               {loading ? 'MEMPROSES...' : 'MASUK KUIS'}
             </button>
 
@@ -242,7 +250,7 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '0.8rem', borderRadius: '10px', fontSize: '0.85rem', textAlign: 'center' }}>{error}</div>}
+            {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '0.8rem', borderRadius: '12px', fontSize: '0.85rem', textAlign: 'center' }}>{error}</div>}
           </form>
         )}
 
@@ -250,16 +258,16 @@ export default function LoginPage() {
         {activeTab === 'register' && (
           <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
             <div>
-              <input type="text" placeholder="Username Discord (Tanpa spasi)" value={username} onChange={handleUsernameChange} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
+              <input type="text" placeholder="Username Discord (Tanpa spasi)" value={username} onChange={handleUsernameChange} required disabled={loading} style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)' }} />
             </div>
             <div>
-              <input type="password" placeholder="Buat Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
+              <input type="password" placeholder="Buat Password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)' }} />
             </div>
             <div>
-              <input type="password" placeholder="Konfirmasi Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
+              <input type="password" placeholder="Konfirmasi Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)' }} />
             </div>
             <div>
-              <input type="text" placeholder="Wallet Address (rete...)" value={wallet} onChange={(e) => setWallet(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
+              <input type="text" placeholder="Wallet Address (rete...)" value={wallet} onChange={(e) => setWallet(e.target.value)} required disabled={loading} style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)' }} />
             </div>
             
             <div>
@@ -268,9 +276,9 @@ export default function LoginPage() {
                 onChange={(e) => setSelectedCountry(e.target.value)} 
                 required 
                 disabled={loading}
-                style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', cursor: 'pointer' }}
+                style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', cursor: 'pointer', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)' }}
               >
-                <option value="" disabled style={{ color: '#05070c', background: '#121826' }}>Pilih Negara Kamu</option>
+                <option value="" disabled style={{ color: '#030508', background: '#121826' }}>Pilih Negara Kamu</option>
                 {countries.map((c) => (
                   <option key={c.kode_negara} value={c.kode_negara} style={{ color: 'white', background: '#121826' }}>
                     {c.nama_negara}
@@ -279,15 +287,15 @@ export default function LoginPage() {
               </select>
             </div>
 
-            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.8rem', borderRadius: '10px', fontSize: '0.75rem', color: '#f87171', textAlign: 'left', lineHeight: '1.4' }}>
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.8rem', borderRadius: '12px', fontSize: '0.75rem', color: '#f87171', textAlign: 'left', lineHeight: '1.4' }}>
               <strong>PERINGATAN KEAMANAN:</strong><br/>
               Hanya masukkan Alamat Wallet (Address). JANGAN pernah memberikan PIN, Sandi, Kode, atau Seed Phrase (Private Key) Anda ke website ini!
             </div>
 
-            <button type="submit" disabled={loading} style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#05070c', border: 'none', borderRadius: '14px', padding: '1rem', fontWeight: '800', width: '100%', cursor: 'pointer', letterSpacing: '1px', boxShadow: '0 10px 25px rgba(255, 122, 0, 0.3)' }}>
+            <button type="submit" disabled={loading} style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#030508', border: 'none', borderRadius: '16px', padding: '1.1rem', fontWeight: '800', width: '100%', cursor: 'pointer', letterSpacing: '1px', boxShadow: '0 10px 25px rgba(255, 122, 0, 0.35)' }}>
               {loading ? 'MENDAFTAR...' : 'DAFTAR & DAPATKAN KODE'}
             </button>
-            {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '0.8rem', borderRadius: '10px', fontSize: '0.85rem', textAlign: 'center' }}>{error}</div>}
+            {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '0.8rem', borderRadius: '12px', fontSize: '0.85rem', textAlign: 'center' }}>{error}</div>}
           </form>
         )}
 
@@ -295,27 +303,27 @@ export default function LoginPage() {
 
       {/* MODAL LUPA PASSWORD */}
       {showForgot && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(5, 7, 12, 0.85)', backdropFilter: 'blur(15px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
-          <div style={{ background: 'rgba(12, 16, 28, 0.95)', border: '1px solid rgba(255, 122, 0, 0.3)', borderRadius: '28px', padding: '2.5rem', maxWidth: '420px', width: '100%', textAlign: 'center', boxShadow: '0 30px 60px rgba(0,0,0,0.9)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(3, 5, 8, 0.85)', backdropFilter: 'blur(15px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
+          <div style={{ background: 'linear-gradient(180deg, rgba(28, 20, 14, 0.95) 0%, rgba(8, 11, 18, 0.95) 100%)', border: '1px solid rgba(255, 122, 0, 0.35)', borderRadius: '28px', padding: '2.5rem', maxWidth: '420px', width: '100%', textAlign: 'center', boxShadow: '0 30px 60px rgba(0,0,0,0.95)' }}>
             <h2 style={{ color: 'white', margin: '0 0 0.5rem 0', fontSize: '1.4rem' }}>Reset Password</h2>
             <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Masukkan Username, Kode Recovery (RTM-ID...), dan Password Baru.</p>
 
             <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <input type="text" placeholder="Username Discord" value={resetUsername} onChange={(e) => setResetUsername(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
+                <input type="text" placeholder="Username Discord" value={resetUsername} onChange={(e) => setResetUsername(e.target.value)} required disabled={loading} style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
               </div>
               <div>
-                <input type="text" placeholder="Kode Recovery (RTM-ID...)" value={resetRecovery} onChange={(e) => setResetRecovery(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', textTransform: 'uppercase' }} />
+                <input type="text" placeholder="Kode Recovery (RTM-ID...)" value={resetRecovery} onChange={(e) => setResetRecovery(e.target.value)} required disabled={loading} style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none', textTransform: 'uppercase' }} />
               </div>
               <div>
-                <input type="password" placeholder="Password Baru" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(8, 12, 20, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', color: 'white', padding: '1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
+                <input type="password" placeholder="Password Baru" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required disabled={loading} style={{ background: 'rgba(4, 7, 14, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', color: 'white', padding: '1.1rem 1.2rem', width: '100%', fontSize: '0.95rem', outline: 'none' }} />
               </div>
 
-              {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>{error}</div>}
+              {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '0.8rem', borderRadius: '12px', fontSize: '0.85rem' }}>{error}</div>}
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
-                <button type="button" onClick={() => setShowForgot(false)} style={{ flex: 1, padding: '0.9rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Batal</button>
-                <button type="submit" disabled={loading} style={{ flex: 1, padding: '0.9rem', background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', border: 'none', color: '#05070c', borderRadius: '12px', fontWeight: '800', cursor: 'pointer' }}>{loading ? 'Memproses...' : 'Reset Password'}</button>
+                <button type="button" onClick={() => setShowForgot(false)} style={{ flex: 1, padding: '0.9rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '14px', fontWeight: 'bold', cursor: 'pointer' }}>Batal</button>
+                <button type="submit" disabled={loading} style={{ flex: 1, padding: '0.9rem', background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', border: 'none', color: '#030508', borderRadius: '14px', fontWeight: '800', cursor: 'pointer' }}>{loading ? 'Memproses...' : 'Reset Password'}</button>
               </div>
             </form>
           </div>
@@ -324,8 +332,8 @@ export default function LoginPage() {
 
       {/* POP-UP KODE KONFIRMASI */}
       {recoveryPopup && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(5, 7, 12, 0.85)', backdropFilter: 'blur(15px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
-          <div style={{ background: 'rgba(12, 16, 28, 0.95)', border: '1px solid rgba(255, 122, 0, 0.3)', borderRadius: '28px', padding: '2.5rem', maxWidth: '450px', width: '100%', textAlign: 'center', boxShadow: '0 30px 60px rgba(0,0,0,0.9)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(3, 5, 8, 0.85)', backdropFilter: 'blur(15px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
+          <div style={{ background: 'linear-gradient(180deg, rgba(28, 20, 14, 0.95) 0%, rgba(8, 11, 18, 0.95) 100%)', border: '1px solid rgba(255, 122, 0, 0.35)', borderRadius: '28px', padding: '2.5rem', maxWidth: '450px', width: '100%', textAlign: 'center', boxShadow: '0 30px 60px rgba(0,0,0,0.95)' }}>
             <h2 style={{ color: 'white', margin: '0 0 0.5rem 0', fontSize: '1.4rem' }}>Pendaftaran Sukses</h2>
             <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Simpan kode ini. Kamu akan membutuhkannya untuk verifikasi.</p>
 
@@ -361,7 +369,7 @@ export default function LoginPage() {
                 setRecoveryPopup(null); 
                 navigate('/konfirmasi', { state: { username: username } }); 
               }} 
-              style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#05070c', border: 'none', borderRadius: '12px', padding: '1rem', fontWeight: '800', width: '100%', cursor: 'pointer' }}
+              style={{ background: 'linear-gradient(135deg, #ff7a00 0%, #e56d00 100%)', color: '#030508', border: 'none', borderRadius: '14px', padding: '1rem', fontWeight: '800', width: '100%', cursor: 'pointer' }}
             >
               Saya Sudah Mencatat, Lanjut
             </button>
